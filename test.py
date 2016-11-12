@@ -1,5 +1,7 @@
+# -*- coding: utf-8 -*-
 import cv2
 import os
+
 
 #print "Working directory: "
 #print os.getcwd()
@@ -11,6 +13,7 @@ filePath = imagesDir + "auto000.jpg"
 
 images = os.listdir( imagesDir )
 
+
 if not os.path.exists( thresholdDir ):
 	os.makedirs( thresholdDir )
 	print "Created directory: " + thresholdDir
@@ -20,7 +23,7 @@ for image in images:
 
 	if os.path.isfile( filePath ):
 		img = cv2.imread( filePath, 0 )
-		threshholding = cv2.adaptiveThreshold( img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
+		threshholding = cv2.adaptiveThreshold( img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 40 )
 
 		#cv2.imshow( filePath, threshholding )
 		print "Image thresholding result in: " + thresholdDir + image
