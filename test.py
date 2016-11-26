@@ -23,7 +23,7 @@ for image in images:
 
 	if os.path.isfile( filePath ):
 		img = cv2.imread( filePath, 0 )
-		threshholding = cv2.adaptiveThreshold( img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 40 )
+		threshholding = cv2.adaptiveThreshold( img, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
 
 		#cv2.imshow( filePath, threshholding )
 		print "Image thresholding result in: " + thresholdDir + image

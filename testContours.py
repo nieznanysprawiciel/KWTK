@@ -6,48 +6,115 @@ import random
 #print os.getcwd()
 
 
+def ratio(contour):
+    """  """
+    xks = [point[0][0] for point in contour]
+    yks = [point[0][1] for point in contour]
+
+    diff_x = max(xks) - min(xks)
+    diff_y = max(yks) - min(yks)
+
+    if diff_y == 0:
+        return float('inf')
+    else:
+        return float(diff_x) / float(diff_y)
+
+
+def is_not_too_small(contour):
+    xks = [point[0][0] for point in contour]
+    yks = [point[0][1] for point in contour]
+
+    diff_x = max(xks) - min(xks)
+    diff_y = max(yks) - min(yks)
+
+    return diff_x > 40 and diff_y > 20
+
+
+def rectangle_similarity ( contour ):
+    """
+    The smaller the value the more rectangular.
+    To make this metric work well, the contour should be convex.
+    """
+    xks = [point[0][0] for point in contour]
+    yks = [point[0][1] for point in contour]
+
+    dist_xks = [min(x - min(xks), max(xks) - x) for x in xks]
+    dist_yks = [min(y - min(yks), max(yks) - y) for y in yks]
+
+    return (sum(dist_xks) + sum(dist_yks)) / float(len(contour))
+
+
+expected_ratio = 520.0 / 114.0
+
+
 imagesDir = "images/"
 thresholdDir = "thresh/"
 contoursDir = "contours/"
 
-writeExtension = ".jpg"		# for unknown reasons sometimes python can't write image with jpg or png extension :(
+writeExtension = ".jpg"        # for unknown reasons sometimes python can't write image with jpg or png extension :(
 
 imageName = "auto000.jpg"
 filePath = imagesDir + imageName
 
 if not os.path.exists( contoursDir ):
     os.makedirs( contoursDir )
-	print "Created directory: " + contoursDir
+    print "Created directory: " + contoursDir
 
+# initialize of random numbers
 random.seed()
 
 if os.path.isfile( filePath ):
-	srcImage = cv2.imread( filePath, 0 )
-	colorImage = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
-	threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
-	
-	#cv2.imshow( "src", srcImage )
-	#cv2.imshow( "copy", colorImage )
-	
-	contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_LIST , cv2.cv.CV_CHAIN_APPROX_NONE )
-	
-	for idx in range( 0, len( contours ) ):
-		R = random.randint( 0, 255 )
-		G = random.randint( 0, 255 )
-		B = random.randint( 0, 255 )
-		
-		cv2.drawContours( colorImage, contours, idx, ( R, G, B ), cv2.cv.CV_FILLED )
-	
-	cv2.imshow( filePath, colorImage )
-	
-	pre, ext = os.path.splitext( imageName )
-	imageName = pre + writeExtension
-	resultFile = contoursDir + imageName
-	
-	cv2.imwrite( resultFile, colorImage )
-	print "Segmented image result in: " + resultFile
-	
-	cv2.waitKey(0)
-	cv2.destroyAllWindows()
+    srcImage = cv2.imread( filePath, 0 )
+    colorImage = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
+    threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
+    
+    #cv2.imshow( "src", srcImage )
+    #cv2.imshow( "copy", colorImage )
+    
+    contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_LIST , cv2.cv.CV_CHAIN_APPROX_NONE )
+
+    # The license plate:
+    #     must be at least a rectangle
+    #     should have width to height ratio as defined in the traffic law
+    #     should be at least 30x15px
+    filtered_contours = [contour for contour in contours
+                         if len(contour) >= 4 and
+                         abs(ratio(contour) - expected_ratio) < 1 and
+                         is_not_too_small(contour)]
+
+    # It's a good idea to simplify the contours to their convex hulls.
+    simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
+
+    if len(simplified_contours) == 0:
+        raise Exception("No license plate found!")
+    else:
+        # For now, we select "the most rectangular" contour.
+        # There should be a threshold to find more license plates.
+        selected_contours = [sorted(simplified_contours, key=rectangle_similarity)[0]]
+
+        for contour in simplified_contours:
+            print(rectangle_similarity(contour))
+
+        for idx in range( 0, len( selected_contours ) ):
+            R = random.randint( 0, 255 )
+            G = random.randint( 0, 255 )
+            B = random.randint( 0, 255 )
+
+            cv2.drawContours( colorImage, selected_contours, idx, ( R, G, B ), cv2.cv.CV_FILLED )
+
+        cv2.imshow( filePath, colorImage )
+
+        pre, ext = os.path.splitext( imageName )
+        imageName = pre + writeExtension
+        resultFile = contoursDir + imageName
+
+        cv2.imwrite( resultFile, colorImage )
+        print "Segmented image result in: " + resultFile
+
+        cv2.waitKey(0)
+        cv2.destroyAllWindows()
 else:
-	print "Image doesn't exist: " + filePath
+    print "Image doesn't exist: " + filePath
+
+
+#
