@@ -27,33 +27,32 @@ def is_not_too_small(contour):
     diff_x = max(xks) - min(xks)
     diff_y = max(yks) - min(yks)
 
-    return diff_x > 40 and diff_y > 20
+    return diff_x > 30 and diff_y > 15
 
 
-def rectangle_similarity ( contour ):
-    """
-    The smaller the value the more rectangular.
-    To make this metric work well, the contour should be convex.
-    """
+def convex_area_diff (contour):
+
     xks = [point[0][0] for point in contour]
     yks = [point[0][1] for point in contour]
 
-    dist_xks = [min(x - min(xks), max(xks) - x) for x in xks]
-    dist_yks = [min(y - min(yks), max(yks) - y) for y in yks]
+    rectangle_area = (max(xks) - min(xks)) * (max(yks) - min(yks))
+    area = cv2.contourArea(contour)
 
-    return (sum(dist_xks) + sum(dist_yks)) / float(len(contour))
+    return float((rectangle_area - area))/rectangle_area
 
 
 expected_ratio = 520.0 / 114.0
+
 
 
 imagesDir = "images/"
 thresholdDir = "thresh/"
 contoursDir = "contours/"
 
+
 writeExtension = ".jpg"        # for unknown reasons sometimes python can't write image with jpg or png extension :(
 
-imageName = "auto000.jpg"
+imageName = "auto006.jpg"
 filePath = imagesDir + imageName
 
 if not os.path.exists( contoursDir ):
@@ -63,13 +62,11 @@ if not os.path.exists( contoursDir ):
 # initialize of random numbers
 random.seed()
 
+
 if os.path.isfile( filePath ):
     srcImage = cv2.imread( filePath, 0 )
     colorImage = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
     threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
-    
-    #cv2.imshow( "src", srcImage )
-    #cv2.imshow( "copy", colorImage )
     
     contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_LIST , cv2.cv.CV_CHAIN_APPROX_NONE )
 
@@ -90,10 +87,10 @@ if os.path.isfile( filePath ):
     else:
         # For now, we select "the most rectangular" contour.
         # There should be a threshold to find more license plates.
-        selected_contours = [sorted(simplified_contours, key=rectangle_similarity)[0]]
+        selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
 
         for contour in simplified_contours:
-            print(rectangle_similarity(contour))
+            print(convex_area_diff(contour))
 
         for idx in range( 0, len( selected_contours ) ):
             R = random.randint( 0, 255 )
@@ -117,4 +114,4 @@ else:
     print "Image doesn't exist: " + filePath
 
 
-#
+
