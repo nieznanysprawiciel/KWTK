@@ -41,7 +41,24 @@ def is_not_too_small(contour):
 
     return diff_x > 40 and diff_y > 20
 
+def has_letters_inside( index, hierarchy ):
+	min_letters = 5
+	max_letters = 9
 
+	num_sub_objects = 0
+	first_child_idx = hierarchy[ index ][ 2 ]	# Check openCV docs
+	
+	if first_child_idx < 0:
+		return False
+	
+	while hierarchy[ first_child_idx ][ 0 ] >= 0:
+		first_child_idx = hierarchy[ first_child_idx ][ 0 ]
+		num_sub_objects = num_sub_objects + 1
+	
+	print num_sub_objects
+	
+	return num_sub_objects >= min_letters or num_sub_objects <= max_letters
+	
 
 ######################
 expected_ratio = 520.0 / 114.0
@@ -79,14 +96,21 @@ for image in imageFiles:
         
         contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_LIST , cv2.cv.CV_CHAIN_APPROX_NONE )
 
+        print hierarchy
+		
         # The license plate:
         #     must be at least a rectangle
         #     should have width to height ratio as defined in the traffic law
         #     should be at least 30x15px
-        filtered_contours = [contour for contour in contours
+		#	  should contain letters
+        filtered_contours = [ contours[ idx ] for idx in range( 0, len( contours ) )
+                             if has_letters_inside( idx, hierarchy[ 0 ] ) ]
+		
+        filtered_contours = [contour for contour in filtered_contours
                              if len(contour) >= 4 and
                              abs(ratio(contour) - expected_ratio) < 1 and
-                             is_not_too_small(contour)]
+                             is_not_too_small(contour) ]
+							 
 
         # It's a good idea to simplify the contours to their convex hulls.
         simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
