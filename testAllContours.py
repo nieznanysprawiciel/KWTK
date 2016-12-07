@@ -55,7 +55,7 @@ def has_letters_inside( index, hierarchy ):
 		first_child_idx = hierarchy[ first_child_idx ][ 0 ]
 		num_sub_objects = num_sub_objects + 1
 	
-	print num_sub_objects
+	#print num_sub_objects
 	
 	return num_sub_objects >= min_letters or num_sub_objects <= max_letters
 	
@@ -94,9 +94,9 @@ for image in imageFiles:
         #cv2.imshow( "src", srcImage )
         #cv2.imshow( "copy", colorImage )
         
-        contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_LIST , cv2.cv.CV_CHAIN_APPROX_NONE )
+        contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_NONE )
 
-        print hierarchy
+        #print hierarchy
 		
         # The license plate:
         #     must be at least a rectangle
