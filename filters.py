@@ -45,7 +45,7 @@ def has_letters_inside( index, hierarchy ):
         first_child_idx = hierarchy[ first_child_idx ][ 0 ]
         num_sub_objects = num_sub_objects + 1
     
-    print num_sub_objects
+    #print num_sub_objects
     
     return num_sub_objects >= min_letters or num_sub_objects <= max_letters
     
@@ -63,13 +63,14 @@ def filter_contours( contours, hierarchy ):
         contoursIndiecies = [ idx for idx in range( len( contours ) )
                              if len(contours[ idx ]) >= 4 and
                              abs(ratio(contours[ idx ]) - expected_ratio) < 1 and
-                             is_not_too_small(contours[ idx ]) ]
-							 #and
-                             #has_letters_inside( idx, hierarchy ) ]
+                             is_not_too_small(contours[ idx ]) and
+                             has_letters_inside( idx, hierarchy ) ]
         
+        #print contoursIndiecies
+		
         #if len( contoursIndiecies ) > 0:
-        newContours = [ contours[ idx ] for idx in range( len( contoursIndiecies ) ) ]
-        newHierarchy = [ hierarchy[ idx ] for idx in range( len( contoursIndiecies ) ) ]
+        newContours = [ contours[ contoursIndiecies[ idx ] ] for idx in range( len( contoursIndiecies ) ) ]
+        newHierarchy = [ hierarchy[ contoursIndiecies[ idx ] ] for idx in range( len( contoursIndiecies ) ) ]
         
         return newContours, newHierarchy
 		
