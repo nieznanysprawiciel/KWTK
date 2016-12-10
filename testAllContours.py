@@ -2,7 +2,6 @@ import cv2
 import os
 import random
 import numpy as np
-import filters
 import processing
 
 #print "working directory: "
@@ -49,7 +48,8 @@ for image in imageFiles:
     if os.path.isfile( filePath ):   
         colorImage = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
 
-        if processing.process( colorImage ):
+        #if processing.process( colorImage ):
+        if processing.process_area_only( colorImage ):
             #cv2.imshow( filePath, colorImage )
 
             pre, ext = os.path.splitext( image )

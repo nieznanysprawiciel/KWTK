@@ -24,15 +24,84 @@ def draw_contours( contours, colorImage ):
         cv2.drawContours( colorImage, contours, idx, ( R, G, B ), cv2.cv.CV_FILLED )
         
         
+def compute_contour_weight( index, hierarchy ):
+    num_letters = 7
+    
+    num_sub_objects = filters.count_sub_object( index, hierarchy )
+    print num_sub_objects
+    
+    difference = float( num_sub_objects - num_letters )
+    difference = min( abs( difference ), num_letters )
+    weight = 1 - difference / num_letters
+    
+    return weight
+    
+    
+def get_children( index, hierarchy, contours ):
+    first_child_idx = hierarchy[ index ][ 2 ]    # Check openCV docs
+    
+    child_list = []
+    
+    if first_child_idx < 0:
+        return child_list
+    
+    while hierarchy[ first_child_idx ][ 0 ] >= 0:
+        first_child_idx = hierarchy[ first_child_idx ][ 0 ]
+        child_list.append( contours[ first_child_idx ] )
+    
+    return child_list
+    
+    
 
 ### main function in this file
 def process( colorImage ):
 
     srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
-    threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_MEAN_C, cv2.THRESH_BINARY, 11, 2 )
+    threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
     
     contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_NONE )
-    filtered_contours, filtered_hierarchy = filters.filter_contours( contours, hierarchy )
+    filtered_contours, contoursIndiecies = filters.filter_contours( contours, hierarchy )
+                         
+
+    # It's a good idea to simplify the contours to their convex hulls.
+    simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
+
+    if not len( simplified_contours ) == 0:
+        # For now, we select "the most rectangular" contour.
+        # There should be a threshold to find more license plates.
+        #selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
+        
+        area_weights = [ convex_area_diff( contour ) for contour in simplified_contours ]
+        hierarchy_weights = [ compute_contour_weight( idx, hierarchy[ 0 ] ) for idx in contoursIndiecies ]
+        weights_sum = [sum(x) for x in zip(area_weights, hierarchy_weights)]
+        
+        best = max( weights_sum )
+        best_idx = weights_sum.index( best )
+
+        for weight in weights_sum:
+            print(weight)        
+        
+        for contour in simplified_contours:
+            print(convex_area_diff(contour))
+
+        result = [ simplified_contours[ best_idx ] ]
+        draw_contours( result, colorImage )
+        
+        result_children = get_children( contoursIndiecies[ best_idx ], hierarchy[ 0 ], contours )
+        draw_contours( result_children, colorImage )
+        
+        return True
+    else:
+        return False
+        
+		
+def process_area_only( colorImage ):
+
+    srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
+    threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
+    
+    contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_NONE )
+    filtered_contours, contoursIndiecies = filters.filter_contours( contours, hierarchy )
                          
 
     # It's a good idea to simplify the contours to their convex hulls.
@@ -43,12 +112,8 @@ def process( colorImage ):
         # There should be a threshold to find more license plates.
         selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
 
-        for contour in simplified_contours:
-            print(convex_area_diff(contour))
-
         draw_contours( selected_contours, colorImage )
+        
         return True
     else:
         return False
-        
-    
