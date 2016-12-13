@@ -3,6 +3,28 @@ import random
 import numpy as np
 import filters
 
+
+def top_left_compare ( point ):
+    return point[ 0 ][ 0 ] + point[ 0 ][ 1 ]
+
+def top_right_compare( point ):
+    return point[ 0 ][ 0 ] - point[ 0 ][ 1 ]
+
+
+def find_corners ( contour ):
+    """
+    Compute dot product between edge vectors and each contour point
+    """
+
+    top_left = min( contour, key = top_left_compare )
+    top_right = max( contour, key = top_right_compare )
+    bottom_right = max( contour, key = top_left_compare )
+    bottom_left = min( contour, key = top_right_compare )
+
+
+    return top_left, top_right, bottom_right, bottom_left
+
+
 def convex_area_diff (contour):
 
     xks = [point[0][0] for point in contour]
