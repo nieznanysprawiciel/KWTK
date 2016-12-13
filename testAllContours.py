@@ -25,7 +25,8 @@ def convex_area_diff (contour):
 
 imagesDir = "images/"
 thresholdDir = "thresh/"
-contoursDir = "contours/"
+contoursDir = "contours2/"
+newPlatesDir = "new_plates/"
 
 writeExtension = ".jpg"        # for unknown reasons sometimes python can't write image with jpg or png extension :(
 
@@ -35,6 +36,10 @@ filePath = imagesDir + imageName
 if not os.path.exists( contoursDir ):
     os.makedirs( contoursDir )
     print "Created directory: " + contoursDir
+
+if not os.path.exists( newPlatesDir ):
+    os.makedirs( newPlatesDir)
+    print "Created directory: " + newPlatesDir
 
 # initialize of random numbers
 random.seed()
@@ -60,6 +65,7 @@ for image in imageFiles:
             print "Segmented image result in: " + resultFile
         #else:
             #raise Exception("No license plate found!")
+
             
     else:
         print "Image doesn't exist: " + filePath
