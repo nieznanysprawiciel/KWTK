@@ -22,8 +22,43 @@ def find_corners ( contour ):
     bottom_left = min( contour, key = top_right_compare )
 
 
-    return top_left, top_right, bottom_right, bottom_left
+    return np.array([top_left, top_right, bottom_right, bottom_left])
 
+
+######
+
+def perspective_warping ( rect, orig):
+
+    (tl, tr, br, bl) = rect
+    widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
+    widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
+
+
+    heightA = np.sqrt(((tr[0] - br[0]) ** 2) + ((tr[1] - br[1]) ** 2))
+    heightB = np.sqrt(((tl[0] - bl[0]) ** 2) + ((tl[1] - bl[1]) ** 2))
+
+
+    maxWidth = max(int(widthA), int(widthB))
+    maxHeight = max(int(heightA), int(heightB))
+
+    # construct our destination points which will be used to
+    # map the screen to a top-down, "birds eye" view
+    dst = np.array([
+        [0, 0],
+        [maxWidth - 1, 0],
+        [maxWidth - 1, maxHeight - 1],
+        [0, maxHeight - 1]],
+        dtype="float32")
+
+    # calculate the perspective transform matrix and warp
+    # the perspective to grab the screen
+    M = cv2.getPerspectiveTransform(rect, dst)
+    warp = cv2.warpPerspective(orig, M, (maxWidth, maxHeight))
+
+    return warp
+
+
+######
 
 def convex_area_diff (contour):
 
@@ -81,7 +116,7 @@ def process( colorImage ):
     srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
     threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
     
-    contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_NONE )
+    contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_SIMPLE )
     filtered_contours, contoursIndiecies = filters.filter_contours( contours, hierarchy )
                          
 
@@ -134,8 +169,15 @@ def process_area_only( colorImage ):
         # There should be a threshold to find more license plates.
         selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
 
-        draw_contours( selected_contours, colorImage )
-        
+        corners = [find_corners(contour) for contour in selected_contours]
+
+        #draw_contours( selected_contours, colorImage )
+        draw_contours(corners, colorImage)
+
+        # sheared_plate = perspective_warping(corners, threshholding)
+        # cv2.imshow(sheared_plate)
+
         return True
     else:
         return False
+
