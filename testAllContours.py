@@ -53,15 +53,17 @@ for image in imageFiles:
     if os.path.isfile( filePath ):   
         colorImage = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
 
+        processed_image = processing.process_area_only2( colorImage )
+
         #if processing.process( colorImage ):
-        if processing.process_area_only( colorImage ):
+        if processed_image is not None:
             #cv2.imshow( filePath, colorImage )
 
             pre, ext = os.path.splitext( image )
             image = pre + writeExtension
-            resultFile = contoursDir + image
+            resultFile = newPlatesDir + image
 
-            cv2.imwrite( resultFile, colorImage )
+            cv2.imwrite( resultFile, processed_image )
             print "Segmented image result in: " + resultFile
         #else:
             #raise Exception("No license plate found!")

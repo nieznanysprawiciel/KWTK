@@ -23,13 +23,12 @@ def find_corners ( contour ):
 
 
     return np.array([top_left, top_right, bottom_right, bottom_left])
-
-
 ######
 
 def perspective_warping ( rect, orig):
 
     (tl, tr, br, bl) = rect
+
     widthA = np.sqrt(((br[0] - bl[0]) ** 2) + ((br[1] - bl[1]) ** 2))
     widthB = np.sqrt(((tr[0] - tl[0]) ** 2) + ((tr[1] - tl[1]) ** 2))
 
@@ -152,7 +151,7 @@ def process( colorImage ):
         return False
         
 		
-def process_area_only( colorImage ):
+def process_area_only2( colorImage ):
 
     srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
     threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
@@ -172,12 +171,44 @@ def process_area_only( colorImage ):
         corners = [find_corners(contour) for contour in selected_contours]
 
         #draw_contours( selected_contours, colorImage )
-        draw_contours(corners, colorImage)
+        #draw_contours(corners, colorImage)
+
+        rect = np.array([point[0] for point in corners[0]], dtype="float32")
+        warped = perspective_warping(rect, colorImage)
 
         # sheared_plate = perspective_warping(corners, threshholding)
         # cv2.imshow(sheared_plate)
 
-        return True
+        return warped
     else:
-        return False
+        return None
+
+    def process_area_only(colorImage):
+
+        srcImage = cv2.cvtColor(colorImage, cv2.COLOR_BGR2GRAY)
+        threshholding = cv2.adaptiveThreshold(srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
+
+        contours, hierarchy = cv2.findContours(threshholding, cv2.cv.CV_RETR_TREE, cv2.cv.CV_CHAIN_APPROX_NONE)
+        filtered_contours, contoursIndiecies = filters.filter_contours(contours, hierarchy)
+
+        # It's a good idea to simplify the contours to their convex hulls.
+        simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
+
+        if not len(simplified_contours) == 0:
+            # For now, we select "the most rectangular" contour.
+            # There should be a threshold to find more license plates.
+            selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
+
+            corners = [find_corners(contour) for contour in selected_contours]
+
+            # draw_contours( selected_contours, colorImage )
+            draw_contours(corners, colorImage)
+
+            # sheared_plate = perspective_warping(corners, threshholding)
+            # cv2.imshow(sheared_plate)
+
+            return True
+        else:
+
+            return False
 
