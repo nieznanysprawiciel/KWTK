@@ -3,6 +3,7 @@ import os
 import random
 import numpy as np
 import processing
+import histogram as hist
 
 #print "working directory: "
 #print os.getcwd()
@@ -65,6 +66,18 @@ for image in imageFiles:
 
             cv2.imwrite( resultFile, processed_image )
             print "Segmented image result in: " + resultFile
+            
+            ### Letters segmentation
+            greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
+            threshholding = cv2.adaptiveThreshold( greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
+            segments = hist.histogram_segmentation( threshholding, 0.09, 6 )
+            
+            height = processed_image.shape[ 0 ]
+            for segment in segments:
+                cv2.rectangle(processed_image, (segment[ 0 ], 0), (segment[ 1 ], height - 1), (255,0,0), 1)
+                
+            resultFile = newPlatesDir + pre + ".segmented" + writeExtension
+            cv2.imwrite( resultFile, processed_image )
         #else:
             #raise Exception("No license plate found!")
 

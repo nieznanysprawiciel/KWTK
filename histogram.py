@@ -49,9 +49,9 @@ def histogram_segmentation( image, threshold, idx_threshold ):
     
     
 def test():
-    colorImage = cv2.imread( "purePlates/plate018.jpg", 0 )
+    greyImage = cv2.imread( "purePlates/plate018.jpg", 0 )
     
-    horizontal, vertical = histograms( colorImage )
+    horizontal, vertical = histograms( greyImage )
     
     #print horizontal
     #print vertical
@@ -62,13 +62,13 @@ def test():
     #plt.show()
     
     threshold = 0.03
-    segments = histogram_segmentation( colorImage, threshold, 9 )
+    segments = histogram_segmentation( greyImage, threshold, 9 )
     
-    height = colorImage.shape[ 0 ]
+    height = greyImage.shape[ 0 ]
     for segment in segments:
-        cv2.rectangle(colorImage, (segment[ 0 ], 0), (segment[ 1 ], height), (0,255,0), 1)
+        cv2.rectangle(greyImage, (segment[ 0 ], 0), (segment[ 1 ], height), (0,255,0), 1)
 
     print segments
-    cv2.imwrite( "purePlates/plate018.segments.jpg", colorImage )
+    cv2.imwrite( "purePlates/plate018.segments.jpg", greyImage )
     
 test()
