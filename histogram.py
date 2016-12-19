@@ -28,12 +28,11 @@ def histograms( image ):
     
     
 
-def histogram_segmentation( image ):
+def histogram_segmentation( image, threshold, idx_threshold ):
     rows = image.shape[ 0 ]
     columns = image.shape[ 1 ]
     
-    search_threshold = rows * 0.1
-    idx_threshold = 2
+    search_threshold = rows * threshold
     print "search_threshold " + str( search_threshold )
     
     horizontal, vertical = histograms( image )
@@ -57,12 +56,19 @@ def test():
     #print horizontal
     #print vertical
     
-    plt.plot( horizontal )
-    plt.show()
+    #plt.plot( horizontal )
+    #plt.show()
     #plt.plot( vertical )
     #plt.show()
     
-    segments = histogram_segmentation( colorImage )
+    threshold = 0.03
+    segments = histogram_segmentation( colorImage, threshold, 9 )
+    
+    height = colorImage.shape[ 0 ]
+    for segment in segments:
+        cv2.rectangle(colorImage, (segment[ 0 ], 0), (segment[ 1 ], height), (0,255,0), 1)
+
     print segments
+    cv2.imwrite( "purePlates/plate018.segments.jpg", colorImage )
     
 test()
