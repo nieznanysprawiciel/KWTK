@@ -71,4 +71,4 @@ def test():
     print segments
     cv2.imwrite( "purePlates/plate018.segments.jpg", greyImage )
     
-test()
+#test()
