@@ -1,10 +1,12 @@
-import cv2
 import os
 import random
-import numpy as np
-import processing
+
+import cv2
+
+import characters_recognition
 import histogram as hist
-import matplotlib.pyplot as plt
+import processing
+
 
 #print "working directory: "
 #print os.getcwd()
@@ -48,6 +50,7 @@ random.seed()
 
 imageFiles = os.listdir( imagesDir )
 
+
 for image in imageFiles:
 
     filePath = imagesDir + image
@@ -76,42 +79,38 @@ for image in imageFiles:
 
             height = processed_image.shape[ 0 ]
 
+            license_plate = ""
+            probable_characters = []
+
             k = 0
             for segment in segments:
                 #1 Cropping segments and saving them
                 crop_img = processed_image[0:height, segment[0]:segment[1]]
-                cv2.imwrite(newPlatesDir + pre + "_segmented_" + str(k) + writeExtension, crop_img )
 
 
-                greyImage = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
-                threshholding_crop = cv2.adaptiveThreshold(greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,
-                                                      15, 5)
-                horizontal_crop, vertical_crop = hist.histograms(threshholding_crop)
+                grey_crop_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+                binary_crop_img = cv2.adaptiveThreshold(
+                    grey_crop_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
+                binary_crop_img = cv2.cvtColor(binary_crop_img, cv2.COLOR_GRAY2BGR)
 
+                cv2.imwrite(newPlatesDir + pre + "_segmented_" + str(k) + writeExtension, binary_crop_img)
 
-                fig = plt.figure()
-                plt.plot(horizontal_crop)
-                plt.xlabel('Piksele')
-                plt.ylabel('Intensywnosc')
-                plt.title('Horizontal histogram ')
-                plt.axis()
-                plt.grid(True)
-                fig.savefig(newPlatesDir + pre + "_segmented_" + str(k) + "horizontal" + writeExtension, format='jpg', dpi=60)
+                possibilities = characters_recognition.find_matching_characters(binary_crop_img)
+                best_probability = possibilities[0][1]
 
-                fig = plt.figure()
-                plt.plot(vertical_crop)
-                plt.xlabel('Piksele')
-                plt.ylabel('Intensywnosc')
-                plt.title('Vertical histogram ')
-                plt.axis()
-                plt.grid(True)
-                fig.savefig(newPlatesDir + pre + "_segmented_" + str(k) + "vertical" + writeExtension, format='jpg', dpi=60)
+                if best_probability > 0.15:
+                    license_plate += possibilities[0][0].upper()
+                    probable_characters += [possibilities[0:5]]
 
-
-                #2 Drawing a rectangles in the picture
-                cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)
+                    # 2 Drawing a rectangles in the picture
+                    cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)
 
                 k = k + 1
+
+            print("Recognized " + license_plate)
+            print("Possibilities:")
+            print(probable_characters)
+
 
             resultFile = newPlatesDir + pre + "_segmented"
             cv2.imwrite( resultFile + writeExtension, processed_image )

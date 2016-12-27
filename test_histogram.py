@@ -9,10 +9,10 @@ print "Working directory: "
 print os.getcwd()
 
 
-imagesDir = "new_plates/"
+imagesDir = "wzorce/"
 # filePath = imagesDir + "a.png"
 
-histogramDir ="histogramy/"
+histogramDir ="histogramy_wzorcow/"
 
 images = os.listdir( imagesDir )
 
@@ -21,14 +21,16 @@ if not os.path.exists( histogramDir ):
 	os.makedirs( histogramDir )
 	print "Created directory: " + histogramDir
 
-i = -1
+
 
 for image in images:
 	filePath = imagesDir + image
 
-	i = i + 1
 
 	if os.path.isfile( filePath ):
+
+		pre, ext = os.path.splitext(image)
+
 		img = cv2.imread( filePath, cv2.cv.CV_LOAD_IMAGE_COLOR )
 
 		greyImage = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -36,29 +38,26 @@ for image in images:
 
 		horizontal, vertical = hist.histograms(threshholding)
 
-		fig = plt.figure(i)
+		print("horizontal len: " + str(len(horizontal)))
+		print("vertical len: " + str(len(vertical)))
+
+		fig = plt.figure()
 		plt.plot(horizontal)
 		plt.xlabel('Piksele')
 		plt.ylabel('Intensywnosc')
 		plt.title('Horizontal histogram ' + image)
 		plt.axis()
 		plt.grid(True)
-		fig.savefig(histogramDir + 'horizontal' + str(i) + '.jpg', format='jpg', dpi=60)
+		fig.savefig(histogramDir + pre + '_horizontal' + '.jpg', format='jpg', dpi=60)
 
-		# histogramDir + 'histogram_' + str(i) + '.png')
+		fig = plt.figure()
+		plt.plot(vertical)
+		plt.xlabel('Piksele')
+		plt.ylabel('Intensywnosc')
+		plt.title('Vertical histogram ' + image)
+		plt.axis()
+		plt.grid(True)
+		fig.savefig(histogramDir + pre + '_vertical' + '.jpg', format='jpg', dpi=60)
 
-
-		#cv2.imshow( filePath, threshholding )
-
-		# print('Horizontal: ')
-		# for i in range(len(horizontal)):
-		#	print(horizontal[i])
-
-		# print('Vertical: ')
-		# for j in range(len(vertical)):
-		#	print(vertical[j])
-		
-		#cv2.waitKey(0)
-		#cv2.destroyAllWindows()
 	else:
 		print "Image doesn't exist: " + filePath
