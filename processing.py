@@ -2,6 +2,7 @@ import cv2
 import random
 import numpy as np
 import filters
+import matplotlib.pyplot as plt
 
 
 def top_left_compare ( point ):
@@ -182,6 +183,28 @@ def process_area_only2( colorImage ):
         return warped
     else:
         return None
+
+
+
+def drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizontal, saveFileVertical):
+
+    fig = plt.figure()
+    plt.plot(horizontal_crop)
+    plt.xlabel('Piksele')
+    plt.ylabel('Intensywnosc')
+    plt.title('Horizontal histogram ')
+    plt.axis()
+    plt.grid(True)
+    fig.savefig(saveFileHorizontal, format='jpg', dpi=60)
+
+    fig = plt.figure()
+    plt.plot(vertical_crop)
+    plt.xlabel('Piksele')
+    plt.ylabel('Intensywnosc')
+    plt.title('Vertical histogram ')
+    plt.axis()
+    plt.grid(True)
+    fig.savefig(saveFileVertical, format='jpg', dpi=60)
 
     def process_area_only(colorImage):
 

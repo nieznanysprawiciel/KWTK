@@ -27,17 +27,12 @@ def convex_area_diff (contour):
 
 imagesDir = "images/"
 thresholdDir = "thresh/"
-contoursDir = "contours2/"
 newPlatesDir = "new_plates/"
 
 writeExtension = ".jpg"        # for unknown reasons sometimes python can't write image with jpg or png extension :(
 
 imageName = "auto000.jpg"
 filePath = imagesDir + imageName
-
-if not os.path.exists( contoursDir ):
-    os.makedirs( contoursDir )
-    print "Created directory: " + contoursDir
 
 if not os.path.exists( newPlatesDir ):
     os.makedirs( newPlatesDir)
@@ -70,48 +65,35 @@ for image in imageFiles:
             
             ### Letters segmentation
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-            threshholding = cv2.adaptiveThreshold( greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
-            segments = hist.histogram_segmentation( threshholding, 0.09, 6 )
+            threshholding_letters = cv2.adaptiveThreshold( greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
+            segments = hist.histogram_segmentation( threshholding_letters, 0.09, 6 )
 
 
             height = processed_image.shape[ 0 ]
 
             k = 0
             for segment in segments:
-                #1 Cropping segments and saving them
+
+                #1 Cropping segments from original images
                 crop_img = processed_image[0:height, segment[0]:segment[1]]
                 cv2.imwrite(newPlatesDir + pre + "_segmented_" + str(k) + writeExtension, crop_img )
 
-
+                #2 Creating histograms of cropped images
                 greyImage = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
                 threshholding_crop = cv2.adaptiveThreshold(greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,
                                                       15, 5)
                 horizontal_crop, vertical_crop = hist.histograms(threshholding_crop)
 
-
-                fig = plt.figure()
-                plt.plot(horizontal_crop)
-                plt.xlabel('Piksele')
-                plt.ylabel('Intensywnosc')
-                plt.title('Horizontal histogram ')
-                plt.axis()
-                plt.grid(True)
-                fig.savefig(newPlatesDir + pre + "_segmented_" + str(k) + "horizontal" + writeExtension, format='jpg', dpi=60)
-
-                fig = plt.figure()
-                plt.plot(vertical_crop)
-                plt.xlabel('Piksele')
-                plt.ylabel('Intensywnosc')
-                plt.title('Vertical histogram ')
-                plt.axis()
-                plt.grid(True)
-                fig.savefig(newPlatesDir + pre + "_segmented_" + str(k) + "vertical" + writeExtension, format='jpg', dpi=60)
+                #3 Drawing histograms
+                saveFileHorizontal = str(newPlatesDir + pre + "_segmented_" + str(k) + "horizontal" + writeExtension)
+                saveFileVertical = str(newPlatesDir + pre + "_segmented_" + str(k) + "vertical" + writeExtension)
+                processing.drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizontal, saveFileVertical)
 
 
-                #2 Drawing a rectangles in the picture
+                #4 Drawing a rectangles in the picture
                 cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)
 
-                k = k + 1
+                k += 1
 
             resultFile = newPlatesDir + pre + "_segmented"
             cv2.imwrite( resultFile + writeExtension, processed_image )
