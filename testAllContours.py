@@ -5,6 +5,7 @@ import numpy as np
 import processing
 import histogram as hist
 import matplotlib.pyplot as plt
+import characters_recognition
 
 #print "working directory: "
 #print os.getcwd()
@@ -71,6 +72,10 @@ for image in imageFiles:
 
             height = processed_image.shape[ 0 ]
 
+
+            license_plate = ""
+            probable_characters = []
+
             k = 0
             for segment in segments:
 
@@ -93,7 +98,31 @@ for image in imageFiles:
                 #4 Drawing a rectangles in the picture
                 cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)
 
+
+                #5 Characters recognition
+                grey_crop_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
+                binary_crop_img = cv2.adaptiveThreshold(
+                    grey_crop_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
+                binary_crop_img = cv2.cvtColor(binary_crop_img, cv2.COLOR_GRAY2BGR)
+
+                cv2.imwrite(newPlatesDir + pre + "_segmented_" + str(k) + writeExtension, binary_crop_img)
+
+                possibilities = characters_recognition.find_matching_characters(binary_crop_img)
+                best_probability = possibilities[0][1]
+
+                if best_probability > 0.15:
+                    license_plate += possibilities[0][0].upper()
+                    probable_characters += [possibilities[0:5]]
+
+                    # 2 Drawing a rectangles in the picture
+                    cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)
+
                 k += 1
+
+
+            print("Recognized " + license_plate)
+            print("Possibilities:")
+            print(probable_characters)
 
             resultFile = newPlatesDir + pre + "_segmented"
             cv2.imwrite( resultFile + writeExtension, processed_image )
@@ -101,6 +130,8 @@ for image in imageFiles:
             #raise Exception("No license plate found!")
             print('Segments')
             print(segments)
+
+
 
     else:
         print "Image doesn't exist: " + filePath
