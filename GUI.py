@@ -233,7 +233,8 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _thresh
 
     # uruchomienie algorytmu
 
-    _results = testAllContours2.plate_recog(_path, _colorImage, _threshold, _idx_threshold)
+    license_plate, probable_characters, result_file =\
+        testAllContours2.plate_recog(_path, _colorImage, _threshold, _idx_threshold)
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -242,10 +243,10 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _thresh
 
     # sprawdzenie czy algorytm zwrocil wyniki
     # jesli tak, wykonywany jest algorytm, jesli nie program jest przerywany - error
-    if _results[3] == False:
+    if license_plate is not None:
 
         # sciezka do analizowanego przez algorytm fragmentu obrazu
-        path2 = os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + _results[2] + ".jpg"
+        path2 = os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + result_file + ".jpg"
 
         # wczytanie i wyswietlenie analizowanego przez algorytm fragmentu obrazu
         photo_temp = Image.open(path2)
@@ -261,11 +262,11 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _thresh
                            bd=1, relief=SUNKEN, anchor=W, font=("Helvetica", 13))
         # statusbar2.pack(side=BOTTOM, fill=X)
         # # wyswietlanie rozpoznanych numerow rejestracyjnych
-        statusbar2.config(text="Rozpoznany numer rejestracyjny: " + str(_results[0]) + "\n Mozliwe znaki i prawdopodobienstwa stwa ich wystapienia",
+        statusbar2.config(text="Rozpoznany numer rejestracyjny: " + str(license_plate) + "\n Mozliwe znaki i prawdopodobienstwa stwa ich wystapienia",
                           font=("Helvetica", 14))
         statusbar2.pack(side=TOP, fill=X)
 
-        wyniki = _results[1]
+        wyniki = probable_characters
         # wyswietlanie zwroconych wynikow
         for wynik in wyniki:
             tekst = "; ".join("{} = {}".format(litera, str(wartosc)[:5]) for litera, wartosc in wynik)
@@ -279,7 +280,6 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _thresh
         tkMessageBox.showerror("Niewlasciwy obszar!",
                                "Zaznaczony obszar zawiera zbyt malo znakow. Prosze ponownie wczytac zdjecie i zaznaczyc obszar obejmujacy tablice rejestracyjna",
                                parent=_child)
-        delete(_child)
 
 
 def draw_click_list():

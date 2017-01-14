@@ -60,6 +60,10 @@ def plate_recog(_path, _colorImage, threshold, idx_threshold):
     results = {}
     results[3] = False
 
+    license_plate = None
+    probable_characters = None
+    resultFile = None
+
     if os.path.isfile(filePath):
 
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -143,21 +147,5 @@ def plate_recog(_path, _colorImage, threshold, idx_threshold):
     else:
         print ("Image doesn't exist: " + filePath)
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # przypisanie wyikow do listy
-    # wyjatek - gdy brak zwroconych wynikow (kiedy algorytm nie dal rady)
-    try:
-        # przypisanie wynikow - odczytanych numerow (license_plate),
-        # pozostalych znakow (probable_characters) oraz sciezki do analizowanego
-        # fragmentu zdjecia (resultFile) do listy results
-        results[0] = license_plate
-        results[1] = probable_characters
-        results[2] = resultFile
-    except(UnboundLocalError):
-        results[3] = True
-    return results
-    # cv2.waitKey(0)
-    # cv2.destroyAllWindows()
-
-
+    # zwrocenie wynikow
+    return license_plate, probable_characters, resultFile
