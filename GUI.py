@@ -11,7 +11,7 @@ import cv2
 
 # funkcja wywolywana po nacisnieciu przycisku Otworz...
 def openwindows():
-    global w1, img, size, t1, t2, child, bt2, click_list
+    global w1, img, size, t3, t4, child, bt2, click_list
 
     # deklaracja typu plikow do wyboru [JPG,PNG]
     myfiletypes = [('JPG/JPEG files', '*.jpg'), ('PNG files', '*.png'), ('All files', '*')]
@@ -145,26 +145,35 @@ def openwindows():
     LF3.pack()
 
     # deklaracja wporwadzanych zmiennych
-    threshold_input = DoubleVar(master=child, value=0.09)
-    idx_threshold_input = IntVar(master=child, value=6)
+    adaptive_thresholding_block_size_input = IntVar(master=child, value=15)
+    adaptive_thresholding_constant_input = DoubleVar(master=child, value=5.0)
+    segmentation_threshold_input = DoubleVar(master=child, value=0.09)
+    min_dist_between_segments_input = IntVar(master=child, value=6)
 
-    # tworzenie etykiety Parametr1
-    sb1 = statusbar = Label(frame3, text="Parametr 1:", bd=1, relief=SUNKEN,
+    # tworzenie etykiet i pol tekstowych dla parametrow
+    sb1 = statusbar = Label(frame3, text="adaptive_thresholding_block_size", bd=1, relief=SUNKEN,
                             anchor=W, font=("Helvetica", 11))
     sb1.pack()
-
-    # tworzenie pola wporwadzania Parametru1
-    t1 = Entry(frame3, textvariable=threshold_input, font=("Helvetica", 10))
+    t1 = Entry(frame3, textvariable=adaptive_thresholding_block_size_input, font=("Helvetica", 10))
     t1.pack()
 
-    # tworzenie etykiety Parametr2
-    sb2 = statusbar = Label(frame3, text="Parametr 2:", bd=1, relief=SUNKEN,
+    sb2 = statusbar = Label(frame3, text="adaptive_thresholding_constant", bd=1, relief=SUNKEN,
                             anchor=W, font=("Helvetica", 11))
     sb2.pack()
-
-    # tworzenie pola wporwadzania Parametru2
-    t2 = Entry(frame3, textvariable=idx_threshold_input, font=("Helvetica", 10))
+    t2 = Entry(frame3, textvariable=adaptive_thresholding_constant_input, font=("Helvetica", 10))
     t2.pack()
+
+    sb3 = statusbar = Label(frame3, text="segmentation_threshold", bd=1, relief=SUNKEN,
+                            anchor=W, font=("Helvetica", 11))
+    sb3.pack()
+    t3 = Entry(frame3, textvariable=segmentation_threshold_input, font=("Helvetica", 10))
+    t3.pack()
+
+    sb4 = statusbar = Label(frame3, text="min_dist_between_segments", bd=1, relief=SUNKEN,
+                            anchor=W, font=("Helvetica", 11))
+    sb4.pack()
+    t4 = Entry(frame3, textvariable=min_dist_between_segments_input, font=("Helvetica", 10))
+    t4.pack()
 
     # tworzenie przyciskow:
 
@@ -176,12 +185,21 @@ def openwindows():
     LF4 = LabelFrame(frame4, background='green')
     LF4.pack()
 
+    def on_analysis_button_click():
+        try:
+            adaptive_thresholding_block_size = adaptive_thresholding_block_size_input.get()
+            adaptive_thresholding_constant = adaptive_thresholding_constant_input.get()
+            segmentation_threshold = segmentation_threshold_input.get()
+            min_dist_between_segments = min_dist_between_segments_input.get()
+            analizuj(
+                pix_array, child, click, rel, statusbar, img, path,
+                adaptive_thresholding_block_size, adaptive_thresholding_constant,
+                segmentation_threshold, min_dist_between_segments, w2)
+        except Exception:
+            tkMessageBox.showerror("Blad!", "Nieprawidlowe wartosci parametrow!", parent=child)
+
     # Analiza - uruchiomienie algorytmu - wywolanie funckji analizuj()
-    bt2 = Button(LF4, text="Analiza",
-                 command=lambda: analizuj(
-                     pix_array, child, click, rel, statusbar, img, path,
-                     threshold_input.get(), idx_threshold_input.get(), w2),
-                 font=("Helvetica", 10))
+    bt2 = Button(LF4, text="Analiza", command=on_analysis_button_click, font=("Helvetica", 10))
     bt2.pack(side=LEFT)
 
     # Wyjdz
@@ -191,95 +209,106 @@ def openwindows():
 
 # funckja wywolywana po nacisnieciu przycisku Analizuj
 # rozpoczyna dzialanie algorytmu
-def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _threshold, _idx_threshold, _w2):
-    global click_list
-     #w1.delete(rect)
-     #rect = None
+def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
+             _adaptive_thresholding_block_size, _adaptive_thresholding_constant,
+             _segmentation_threshold, _min_dist_between_segments, _w2):
+    try:
+        global click_list
+         #w1.delete(rect)
+         #rect = None
 
-    # # wybor zaznaczonego obszaru
-    # if _click[0] > _rel[0]:
-    #     temp = _click[0]
-    #     _click[0] = _rel[0]
-    #     _rel[0] = temp
-    #
-    # if _click[1] > _rel[1]:
-    #     temp = _click[1]
-    #     _click[1] = _rel[1]
-    #     _rel[1] = temp
-
-
-    only_x = [clk[0] for clk in click_list]
-    only_y = [clk[1] for clk in click_list]
-
-    if only_x and only_y:
-        min_x, max_x = min(only_x), max(only_x)
-        min_y, max_y = min(only_y), max(only_y)
-        _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
-
-    # if (_click[0] != 0) | (_rel[0] != 0):
-    #     if (_click[1] != 0) | (_rel[1] != 0):
-    #         _colorImage = _colorImage[_click[1]:_rel[1], _click[0]:_rel[0], :]
-    #         print "TEST!!!", type(_colorImage)
-    #
-    # if (_click[0] == _rel[0] != 0) | (_click[1] == _rel[1] != 0):
-    #     tkMessageBox.showinfo("Zbyt maly obszar!", "Zaznaczono zbyt maly obszar. Prosze zaznaczyc wiekszy obszar")
+        # # wybor zaznaczonego obszaru
+        # if _click[0] > _rel[0]:
+        #     temp = _click[0]
+        #     _click[0] = _rel[0]
+        #     _rel[0] = temp
+        #
+        # if _click[1] > _rel[1]:
+        #     temp = _click[1]
+        #     _click[1] = _rel[1]
+        #     _rel[1] = temp
 
 
+        only_x = [clk[0] for clk in click_list]
+        only_y = [clk[1] for clk in click_list]
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        if only_x and only_y:
+            min_x, max_x = min(only_x), max(only_x)
+            min_y, max_y = min(only_y), max(only_y)
+            _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
 
-    # uruchomienie algorytmu
-
-    license_plate, probable_characters, result_file =\
-        testAllContours2.plate_recog(_path, _colorImage, _threshold, _idx_threshold)
-
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    # sprawdzenie czy algorytm zwrocil wyniki
-    # jesli tak, wykonywany jest algorytm, jesli nie program jest przerywany - error
-    if license_plate is not None:
-
-        # sciezka do analizowanego przez algorytm fragmentu obrazu
-        path2 = os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + result_file + ".jpg"
-
-        # wczytanie i wyswietlenie analizowanego przez algorytm fragmentu obrazu
-        photo_temp = Image.open(path2)
-        photo = ImageTk.PhotoImage(photo_temp)
-        photo_temp = np.asarray(photo_temp)
-        size2 = photo_temp.shape
-        label = Label(_w2, image=photo, borderwidth=1)
-        label.image = photo
-        label.pack()
+        # if (_click[0] != 0) | (_rel[0] != 0):
+        #     if (_click[1] != 0) | (_rel[1] != 0):
+        #         _colorImage = _colorImage[_click[1]:_rel[1], _click[0]:_rel[0], :]
+        #         print "TEST!!!", type(_colorImage)
+        #
+        # if (_click[0] == _rel[0] != 0) | (_click[1] == _rel[1] != 0):
+        #     tkMessageBox.showinfo("Zbyt maly obszar!", "Zaznaczono zbyt maly obszar. Prosze zaznaczyc wiekszy obszar")
 
 
-        statusbar2 = Label(_w2, text="lalala ",
-                           bd=1, relief=SUNKEN, anchor=W, font=("Helvetica", 13))
-        # statusbar2.pack(side=BOTTOM, fill=X)
-        # # wyswietlanie rozpoznanych numerow rejestracyjnych
-        statusbar2.config(text="Rozpoznany numer rejestracyjny: " + str(license_plate) + "\n Mozliwe znaki i prawdopodobienstwa stwa ich wystapienia",
-                          font=("Helvetica", 14))
-        statusbar2.pack(side=TOP, fill=X)
 
-        wyniki = probable_characters
-        # wyswietlanie zwroconych wynikow
-        for wynik in wyniki:
-            tekst = "; ".join("{} = {}".format(litera, str(wartosc)[:5]) for litera, wartosc in wynik)
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-            _statusbar = Label(_w2, text=str(tekst), bd=1, relief=SUNKEN, anchor=W,
-                               font=("Helvetica", 12))
-            _statusbar.pack(side=TOP, fill=X)
+        # uruchomienie algorytmu
 
-        tkMessageBox.showinfo("Zakonczono!", "Analiza zakonczona pomyslnie", parent=child)
-    else:
-        tkMessageBox.showerror("Niewlasciwy obszar!",
-                               "Zaznaczony obszar zawiera zbyt malo znakow. Prosze ponownie wczytac zdjecie i zaznaczyc obszar obejmujacy tablice rejestracyjna",
-                               parent=_child)
+        license_plate, probable_characters, result_file = testAllContours2.plate_recog(
+            _path,
+            _colorImage,
+            _adaptive_thresholding_block_size,
+            _adaptive_thresholding_constant,
+            _segmentation_threshold,
+            _min_dist_between_segments)
+
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+        # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+        # sprawdzenie czy algorytm zwrocil wyniki
+        # jesli tak, wykonywany jest algorytm, jesli nie program jest przerywany - error
+        if license_plate is not None:
+
+            # sciezka do analizowanego przez algorytm fragmentu obrazu
+            path2 = os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + result_file + ".jpg"
+
+            # wczytanie i wyswietlenie analizowanego przez algorytm fragmentu obrazu
+            photo_temp = Image.open(path2)
+            photo = ImageTk.PhotoImage(photo_temp)
+            photo_temp = np.asarray(photo_temp)
+            size2 = photo_temp.shape
+            label = Label(_w2, image=photo, borderwidth=1)
+            label.image = photo
+            label.pack()
+
+
+            statusbar2 = Label(_w2, text="lalala ",
+                               bd=1, relief=SUNKEN, anchor=W, font=("Helvetica", 13))
+            # statusbar2.pack(side=BOTTOM, fill=X)
+            # # wyswietlanie rozpoznanych numerow rejestracyjnych
+            statusbar2.config(text="Rozpoznany numer rejestracyjny: " + str(license_plate) + "\n Mozliwe znaki i prawdopodobienstwa stwa ich wystapienia",
+                              font=("Helvetica", 14))
+            statusbar2.pack(side=TOP, fill=X)
+
+            wyniki = probable_characters
+            # wyswietlanie zwroconych wynikow
+            for wynik in wyniki:
+                tekst = "; ".join("{} = {}".format(litera, str(wartosc)[:5]) for litera, wartosc in wynik)
+
+                _statusbar = Label(_w2, text=str(tekst), bd=1, relief=SUNKEN, anchor=W,
+                                   font=("Helvetica", 12))
+                _statusbar.pack(side=TOP, fill=X)
+
+            tkMessageBox.showinfo("Zakonczono!", "Analiza zakonczona pomyslnie", parent=child)
+        else:
+            tkMessageBox.showerror("Niewlasciwy obszar!",
+                                   "Zaznaczony obszar zawiera zbyt malo znakow. Prosze ponownie wczytac zdjecie i zaznaczyc obszar obejmujacy tablice rejestracyjna",
+                                   parent=_child)
+    except Exception as exc:
+        traceback.print_exc(exc)
+        tkMessageBox.showerror("Blad programu!", "Analiza zakonczona bledem! Sprawdz logi programu.", parent=_child)
 
 
 def draw_click_list():
@@ -366,8 +395,6 @@ def fullscreen(_self):
 w = None
 rect = None
 child = None
-threshold = 0.09
-threshold_idx = 6
 size = np.zeros([2])
 click = np.zeros([2])
 click_list = []

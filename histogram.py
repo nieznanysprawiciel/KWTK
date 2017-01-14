@@ -28,7 +28,7 @@ def histograms( image ):
     
     
 
-def histogram_segmentation( image, threshold, idx_threshold ):
+def histogram_segmentation(image, threshold, min_segment_dist):
     rows = image.shape[ 0 ]
     columns = image.shape[ 1 ]
     
@@ -41,8 +41,8 @@ def histogram_segmentation( image, threshold, idx_threshold ):
     segments = [ idx for idx in range( len( horizontal ) )
                 if horizontal[ idx ] < search_threshold ]
     
-    filtered_segments = [ [ segments[ idx ], segments[ idx + 1 ] ] for idx in range( len( segments ) - 1 )
-                        if segments[ idx + 1 ] - segments[ idx ] >= idx_threshold ]
+    filtered_segments = [[ segments[ idx ], segments[ idx + 1 ] ] for idx in range( len( segments ) - 1 )
+                         if segments[ idx + 1 ] - segments[ idx ] >= min_segment_dist]
     
     return filtered_segments
     

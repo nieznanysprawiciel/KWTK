@@ -35,8 +35,20 @@ def convex_area_diff(contour):
 # delkaracja funkcji glownej (przekazanie sciezki do wybranego zdjecia,
 # macierzy pikseli wybranego zdjecia, parametru nr 1 oraz nr 2
 # jako argumentow funkcji)
-def plate_recog(_path, _colorImage, threshold, idx_threshold):
-    print "Recognition started, threshold = {}, idx_threshold = {}".format(threshold, idx_threshold)
+def plate_recog(
+        _path,
+        _colorImage,
+        adaptive_thresholding_block_size,
+        adaptive_thresholding_constant,
+        segmentation_threshold,
+        min_dist_between_segments):
+    print "Recognition started. Parameter values: " \
+          "adaptive_thresholding_block_size = {}, adaptive_thresholding_constant = {}, " \
+          "segmentation_threshold = {}, min_dist_between_segments = {}".format(
+        adaptive_thresholding_block_size,
+        adaptive_thresholding_constant,
+        segmentation_threshold,
+        min_dist_between_segments)
 
     if not os.path.exists(newPlatesDir):
         os.makedirs(newPlatesDir)
@@ -82,9 +94,10 @@ def plate_recog(_path, _colorImage, threshold, idx_threshold):
 
             ### Letters segmentation
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-            threshholding_letters = cv2.adaptiveThreshold(greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                                                          cv2.THRESH_BINARY, 15, 5)
-            segments = hist.histogram_segmentation(threshholding_letters, threshold, idx_threshold)
+            threshholding_letters = cv2.adaptiveThreshold(
+                greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
+                cv2.THRESH_BINARY, 15, 5)
+            segments = hist.histogram_segmentation(threshholding_letters, segmentation_threshold, min_dist_between_segments)
 
             height = processed_image.shape[0]
 
@@ -102,7 +115,8 @@ def plate_recog(_path, _colorImage, threshold, idx_threshold):
                 greyImage = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
                 threshholding_crop = cv2.adaptiveThreshold(greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                            cv2.THRESH_BINARY,
-                                                           15, 5)
+                                                           adaptive_thresholding_block_size,
+                                                           adaptive_thresholding_constant)
                 horizontal_crop, vertical_crop = hist.histograms(threshholding_crop)
 
                 # 3 Drawing histograms - turned off because it interferes with PyTk GUI and causes bugs in open file dialog
@@ -116,7 +130,8 @@ def plate_recog(_path, _colorImage, threshold, idx_threshold):
                 # 5 Characters recognition
                 grey_crop_img = cv2.cvtColor(crop_img, cv2.COLOR_BGR2GRAY)
                 binary_crop_img = cv2.adaptiveThreshold(
-                    grey_crop_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
+                    grey_crop_img, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,
+                    adaptive_thresholding_block_size, adaptive_thresholding_constant)
                 binary_crop_img = cv2.cvtColor(binary_crop_img, cv2.COLOR_GRAY2BGR)
 
                 cv2.imwrite(newPlatesDir + pre + "_segmented_" + str(k) + writeExtension, binary_crop_img)
