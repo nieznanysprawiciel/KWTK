@@ -152,10 +152,12 @@ def process( colorImage ):
         return False
         
 		
-def process_area_only2( colorImage ):
+def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_thresholding_constant):
 
     srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
-    threshholding = cv2.adaptiveThreshold( srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5 )
+    threshholding = cv2.adaptiveThreshold(
+        srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY,
+        adaptive_thresholding_block_size, adaptive_thresholding_constant)
     
     contours, hierarchy = cv2.findContours( threshholding, cv2.cv.CV_RETR_TREE , cv2.cv.CV_CHAIN_APPROX_NONE )
     filtered_contours, contoursIndiecies = filters.filter_contours( contours, hierarchy )

@@ -149,6 +149,7 @@ def openwindows():
     adaptive_thresholding_constant_input = DoubleVar(master=child, value=5.0)
     segmentation_threshold_input = DoubleVar(master=child, value=0.09)
     min_dist_between_segments_input = IntVar(master=child, value=6)
+    min_character_similarity_input = DoubleVar(master=child, value=0.15)
 
     # tworzenie etykiet i pol tekstowych dla parametrow
     sb1 = statusbar = Label(frame3, text="adaptive_thresholding_block_size", bd=1, relief=SUNKEN,
@@ -175,6 +176,12 @@ def openwindows():
     t4 = Entry(frame3, textvariable=min_dist_between_segments_input, font=("Helvetica", 10))
     t4.pack()
 
+    sb5 = statusbar = Label(frame3, text="min_character_similarity", bd=1, relief=SUNKEN,
+                            anchor=W, font=("Helvetica", 11))
+    sb5.pack()
+    t5 = Entry(frame3, textvariable=min_character_similarity_input, font=("Helvetica", 10))
+    t5.pack()
+
     # tworzenie przyciskow:
 
     # tworzenie ramki
@@ -191,10 +198,12 @@ def openwindows():
             adaptive_thresholding_constant = adaptive_thresholding_constant_input.get()
             segmentation_threshold = segmentation_threshold_input.get()
             min_dist_between_segments = min_dist_between_segments_input.get()
+            min_character_similarity = min_character_similarity_input.get()
             analizuj(
                 pix_array, child, click, rel, statusbar, img, path,
                 adaptive_thresholding_block_size, adaptive_thresholding_constant,
-                segmentation_threshold, min_dist_between_segments, w2)
+                segmentation_threshold, min_dist_between_segments,
+                min_character_similarity, w2)
         except Exception:
             tkMessageBox.showerror("Blad!", "Nieprawidlowe wartosci parametrow!", parent=child)
 
@@ -211,7 +220,7 @@ def openwindows():
 # rozpoczyna dzialanie algorytmu
 def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
              _adaptive_thresholding_block_size, _adaptive_thresholding_constant,
-             _segmentation_threshold, _min_dist_between_segments, _w2):
+             _segmentation_threshold, _min_dist_between_segments, _min_character_similarity, _w2):
     try:
         global click_list
          #w1.delete(rect)
@@ -260,7 +269,8 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
             _adaptive_thresholding_block_size,
             _adaptive_thresholding_constant,
             _segmentation_threshold,
-            _min_dist_between_segments)
+            _min_dist_between_segments,
+            _min_character_similarity)
 
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!

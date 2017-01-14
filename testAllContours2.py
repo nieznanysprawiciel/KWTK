@@ -41,14 +41,17 @@ def plate_recog(
         adaptive_thresholding_block_size,
         adaptive_thresholding_constant,
         segmentation_threshold,
-        min_dist_between_segments):
+        min_dist_between_segments,
+        min_character_similarity):
     print "Recognition started. Parameter values: " \
           "adaptive_thresholding_block_size = {}, adaptive_thresholding_constant = {}, " \
-          "segmentation_threshold = {}, min_dist_between_segments = {}".format(
+          "segmentation_threshold = {}, min_dist_between_segments = {}, " \
+          "min_character_similarity = {}".format(
         adaptive_thresholding_block_size,
         adaptive_thresholding_constant,
         segmentation_threshold,
-        min_dist_between_segments)
+        min_dist_between_segments,
+        min_character_similarity)
 
     if not os.path.exists(newPlatesDir):
         os.makedirs(newPlatesDir)
@@ -81,7 +84,8 @@ def plate_recog(
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # obraz jest wczytywany juz w GUI, tutaj przekazujemy jedynie macierz pikseli
 
-        processed_image = processing.process_area_only2(_colorImage)
+        processed_image = processing.process_area_only2(
+            _colorImage, adaptive_thresholding_block_size, adaptive_thresholding_constant)
 
         if processed_image is not None:
 
@@ -96,7 +100,7 @@ def plate_recog(
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
             threshholding_letters = cv2.adaptiveThreshold(
                 greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
-                cv2.THRESH_BINARY, 15, 5)
+                cv2.THRESH_BINARY, adaptive_thresholding_block_size, adaptive_thresholding_constant)
             segments = hist.histogram_segmentation(threshholding_letters, segmentation_threshold, min_dist_between_segments)
 
             height = processed_image.shape[0]
@@ -139,7 +143,7 @@ def plate_recog(
                 possibilities = characters_recognition.find_matching_characters(binary_crop_img)
                 best_probability = possibilities[0][1]
 
-                if best_probability > 0.15:
+                if best_probability > min_character_similarity:
                     license_plate += possibilities[0][0].upper()
                     probable_characters += [possibilities[0:5]]
 
