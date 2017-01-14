@@ -5,6 +5,7 @@ from PIL import ImageTk, Image
 import os
 import tkMessageBox
 import testAllContours2
+import traceback
 import cv2
 
 
@@ -16,16 +17,17 @@ def openwindows():
     myfiletypes = [('JPG/JPEG files', '*.jpg'), ('PNG files', '*.png'), ('All files', '*')]
 
     # pobranie sciezki wybranego zdjecia
-    open = tkFileDialog.Open(master, filetypes=myfiletypes)
-    path = open.show()
+    path = tkFileDialog.askopenfilename(parent=master, filetypes=myfiletypes)
 
     # obsluga bledu - brak wyboru pliku lub niewlasciwy plik
-    if path == '':
+    if not path:
         return
+
     try:
         pix_array = Image.open(path)
     except:
         # wyswietlenie okna informacyjnego - blad wyboru pliku
+        traceback.print_exc()
         tkMessageBox.showerror("Blad!", "Blad wyboru pliku!")
         return
 
@@ -218,12 +220,11 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, 
 
     only_x = [clk[0] for clk in click_list]
     only_y = [clk[1] for clk in click_list]
-    min_x, max_x = min(only_x), max(only_x)
-    min_y, max_y = min(only_y), max(only_y)
 
-    _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
-
-
+    if only_x and only_y:
+        min_x, max_x = min(only_x), max(only_x)
+        min_y, max_y = min(only_y), max(only_y)
+        _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
 
     # if (_click[0] != 0) | (_rel[0] != 0):
     #     if (_click[1] != 0) | (_rel[1] != 0):

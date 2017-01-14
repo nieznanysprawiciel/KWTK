@@ -99,10 +99,10 @@ def plate_recog(_path, _colorImage, par1, par2):
                                                            15, 5)
                 horizontal_crop, vertical_crop = hist.histograms(threshholding_crop)
 
-                # 3 Drawing histograms
-                saveFileHorizontal = str(newPlatesDir + pre + "_segmented_" + str(k) + "horizontal" + writeExtension)
-                saveFileVertical = str(newPlatesDir + pre + "_segmented_" + str(k) + "vertical" + writeExtension)
-                processing.drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizontal, saveFileVertical)
+                # 3 Drawing histograms - turned off because it interferes with PyTk GUI and causes bugs in open file dialog
+                # saveFileHorizontal = str(newPlatesDir + pre + "_segmented_" + str(k) + "horizontal" + writeExtension)
+                # saveFileVertical = str(newPlatesDir + pre + "_segmented_" + str(k) + "vertical" + writeExtension)
+                # processing.drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizontal, saveFileVertical)
 
                 # 4 Drawing a rectangles in the picture
                 cv2.rectangle(processed_image, (segment[0], 0), (segment[1], height - 1), (255, 0, 0), 1)

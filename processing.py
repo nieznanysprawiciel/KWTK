@@ -206,32 +206,32 @@ def drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizont
     plt.grid(True)
     fig.savefig(saveFileVertical, format='jpg', dpi=60)
 
-    def process_area_only(colorImage):
 
-        srcImage = cv2.cvtColor(colorImage, cv2.COLOR_BGR2GRAY)
-        threshholding = cv2.adaptiveThreshold(srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
+def process_area_only(colorImage):
 
-        contours, hierarchy = cv2.findContours(threshholding, cv2.cv.CV_RETR_TREE, cv2.cv.CV_CHAIN_APPROX_NONE)
-        filtered_contours, contoursIndiecies = filters.filter_contours(contours, hierarchy)
+    srcImage = cv2.cvtColor(colorImage, cv2.COLOR_BGR2GRAY)
+    threshholding = cv2.adaptiveThreshold(srcImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C, cv2.THRESH_BINARY, 15, 5)
 
-        # It's a good idea to simplify the contours to their convex hulls.
-        simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
+    contours, hierarchy = cv2.findContours(threshholding, cv2.cv.CV_RETR_TREE, cv2.cv.CV_CHAIN_APPROX_NONE)
+    filtered_contours, contoursIndiecies = filters.filter_contours(contours, hierarchy)
 
-        if not len(simplified_contours) == 0:
-            # For now, we select "the most rectangular" contour.
-            # There should be a threshold to find more license plates.
-            selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
+    # It's a good idea to simplify the contours to their convex hulls.
+    simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
 
-            corners = [find_corners(contour) for contour in selected_contours]
+    if not len(simplified_contours) == 0:
+        # For now, we select "the most rectangular" contour.
+        # There should be a threshold to find more license plates.
+        selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
 
-            # draw_contours( selected_contours, colorImage )
-            draw_contours(corners, colorImage)
+        corners = [find_corners(contour) for contour in selected_contours]
 
-            # sheared_plate = perspective_warping(corners, threshholding)
-            # cv2.imshow(sheared_plate)
+        # draw_contours( selected_contours, colorImage )
+        draw_contours(corners, colorImage)
 
-            return True
-        else:
+        # sheared_plate = perspective_warping(corners, threshholding)
+        # cv2.imshow(sheared_plate)
 
-            return False
+        return True
+    else:
 
+        return False
