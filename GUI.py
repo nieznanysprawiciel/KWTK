@@ -10,7 +10,7 @@ import cv2
 
 # funkcja wywolywana po nacisnieciu przycisku Otworz...
 def openwindows():
-    global w1, img, size, t1, t2, child, bt2, bt1
+    global w1, img, size, t1, t2, child, bt2, bt1, click_list
 
     # deklaracja typu plikow do wyboru [JPG,PNG]
     myfiletypes = [('JPG/JPEG files', '*.jpg'), ('PNG files', '*.png'), ('All files', '*')]
@@ -30,6 +30,7 @@ def openwindows():
         return
 
     # tworzenie i wyswietlanie nowego okna
+    click_list = []
     child = Toplevel()
     fullscreen(child)
     child.configure(background='#aaa9ff')
@@ -69,6 +70,8 @@ def openwindows():
               height=child.winfo_screenheight() / 2)
     w1.config(xscrollcommand=hbar.set, yscrollcommand=vbar.set)
 
+
+
     # wyswietlenie wybranego zdjecia
     w1.create_image(0, 0, image=img, anchor='nw')
 
@@ -101,7 +104,7 @@ def openwindows():
 
     # tworzenie ramki
     frame2 = Frame(child, width=child.winfo_screenwidth() / 2 - int(wd_vbar) * 2,
-                   height=child.winfo_screenheight() / 2, borderwidth=4, relief=SUNKEN)
+                   height=child.winfo_screenheight() /2, borderwidth=4, relief=SUNKEN)
 
     # tworzenie etykiety
     LF2 = LabelFrame(frame2, text="Analizowany fragment obrazu")
@@ -120,7 +123,7 @@ def openwindows():
     vbar2.pack(side=RIGHT, fill=Y)
     vbar2.config(command=w2.yview)
     w2.config(width=child.winfo_screenwidth() / 2,
-              height=child.winfo_screenheight() / 2)
+              height=child.winfo_screenheight()/2 )
     w2.config(xscrollcommand=hbar2.set, yscrollcommand=vbar2.set)
     w2.pack(expand=True, fill=BOTH)
 
@@ -181,12 +184,11 @@ def openwindows():
     LF4.pack()
 
     # Wprowadz - wprowadzenie nowych parametrow - uruchomienie funkcji insert()
-    bt1 = Button(LF4, text="Wprowadz \n[opcjonalnie]", command=insert, font=("Helvetica", 10))
+    bt1 = Button(LF4, text="Wprowadz \nnowe parametry", command=insert, font=("Helvetica", 10))
     bt1.pack(side=LEFT)
 
     # Analiza - uruchiomienie algorytmu - wywolanie funckji analizuj()
-    bt2 = Button(LF4, text="Analiza", command=lambda: analizuj(pix_array,
-                                                               child, click, rel, statusbar, img, path, par1, par2, w2),
+    bt2 = Button(LF4, text="Analiza", command=lambda: analizuj(pix_array, child, click, rel, statusbar, img, path, par1, par2, w2),
                  font=("Helvetica", 10))
     bt2.pack(side=LEFT)
 
@@ -198,27 +200,40 @@ def openwindows():
 # funckja wywolywana po nacisnieciu przycisku Analizuj
 # rozpoczyna dzialanie algorytmu
 def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, _par2, _w2):
-    global rect
-    w1.delete(rect)
-    rect = None
+    global click_list
+     #w1.delete(rect)
+     #rect = None
 
-    # wybor zaznaczonego obszaru
-    if _click[0] > _rel[0]:
-        temp = _click[0]
-        _click[0] = _rel[0]
-        _rel[0] = temp
+    # # wybor zaznaczonego obszaru
+    # if _click[0] > _rel[0]:
+    #     temp = _click[0]
+    #     _click[0] = _rel[0]
+    #     _rel[0] = temp
+    #
+    # if _click[1] > _rel[1]:
+    #     temp = _click[1]
+    #     _click[1] = _rel[1]
+    #     _rel[1] = temp
 
-    if _click[1] > _rel[1]:
-        temp = _click[1]
-        _click[1] = _rel[1]
-        _rel[1] = temp
 
-    if (_click[0] != 0) | (_rel[0] != 0):
-        if (_click[1] != 0) | (_rel[1] != 0):
-            _colorImage = _colorImage[_click[1]:_rel[1], _click[0]:_rel[0], :]
+    only_x = [clk[0] for clk in click_list]
+    only_y = [clk[1] for clk in click_list]
+    min_x, max_x = min(only_x), max(only_x)
+    min_y, max_y = min(only_y), max(only_y)
 
-    if (_click[0] == _rel[0] != 0) | (_click[1] == _rel[1] != 0):
-        tkMessageBox.showinfo("Zbyt maly obszar!", "Zaznaczono zbyt maly obszar. Prosze zaznaczyc wiekszy obszar")
+    _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
+
+
+
+    # if (_click[0] != 0) | (_rel[0] != 0):
+    #     if (_click[1] != 0) | (_rel[1] != 0):
+    #         _colorImage = _colorImage[_click[1]:_rel[1], _click[0]:_rel[0], :]
+    #         print "TEST!!!", type(_colorImage)
+    #
+    # if (_click[0] == _rel[0] != 0) | (_click[1] == _rel[1] != 0):
+    #     tkMessageBox.showinfo("Zbyt maly obszar!", "Zaznaczono zbyt maly obszar. Prosze zaznaczyc wiekszy obszar")
+
+
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -250,22 +265,25 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, 
         label.image = photo
         label.pack()
 
-        # wyswietlanie zwroconych wynikow
-        for i in range(0, len(_results[1])):
-            _statusbar = "statusbar" + str(i)
 
-            _statusbar = Label(_w2, text=str(_results[1][i]), bd=1, relief=SUNKEN, anchor=W,
-                               font=("Helvetica", 12))
-            _statusbar.pack(side=BOTTOM, fill=X)
-
-        # wyswietlanie rozpoznanych numerow rejestracyjnych
-        _statusbar.config(text="Rozpoznany numer rejestracyjny: " + str(_results[0]),
-                          font=("Helvetica", 14))
-        _statusbar.pack(side=TOP, fill=X)
-
-        statusbar2 = Label(_w2, text="Mozliwe znaki i prawdopodobienstwo ich wystapienia:",
+        statusbar2 = Label(_w2, text="lalala ",
                            bd=1, relief=SUNKEN, anchor=W, font=("Helvetica", 13))
-        statusbar2.pack(side=BOTTOM, fill=X)
+        # statusbar2.pack(side=BOTTOM, fill=X)
+        # # wyswietlanie rozpoznanych numerow rejestracyjnych
+        statusbar2.config(text="Rozpoznany numer rejestracyjny: " + str(_results[0]) + "\n Mozliwe znaki i prawdopodobienstwa stwa ich wystapienia",
+                          font=("Helvetica", 14))
+        statusbar2.pack(side=TOP, fill=X)
+
+        wyniki = _results[1]
+        # wyswietlanie zwroconych wynikow
+        for wynik in wyniki:
+            tekst = "; ".join("{} = {}".format(litera, str(wartosc)[:5]) for litera, wartosc in wynik)
+
+            _statusbar = Label(_w2, text=str(tekst), bd=1, relief=SUNKEN, anchor=W,
+                               font=("Helvetica", 12))
+            _statusbar.pack(side=TOP, fill=X)
+
+
 
         # blokowanie przyciskow
         bt2.config(state=DISABLED)
@@ -278,42 +296,68 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, 
         delete(_child)
 
 
+def draw_click_list():
+    global click_list, w1
+
+    if len(click_list) < 2:
+        return
+
+    flatten = []
+    for x, y in click_list:
+        flatten += [x, y]
+
+    if len(click_list) == 4:
+        flatten += click_list[0]
+
+    w1.create_line(*flatten, width=3, fill="blue", tags="area_line")
+
 # zdarzenie - wcisniecie przycisku
 def clicked(_event):
-    global click
+    global click, click_list
+
+    if len(click_list) == 4:
+        return
+
     # zmiana wspolrzednych okna na wspolrzedne Canvas
     x, y = w1.canvasx(_event.x), w1.canvasy(_event.y)
     # pobranie pozycji kursora
     click = [x, y]
+
+    click_list.append((x, y))
+    draw_click_list()
+
     print("Clicked at", x, y)
 
 
 # event - zwolnienie przycisku [tworzenie zaznaczenia]
 def release(_event):
-    global rel
-    global rect
-    global child
-    # tworzenie zaznaczenia
-    if rect == None:
-        # zmiana wspolrzednych okna na wspolrzedne Canvas
-        x, y = w1.canvasx(_event.x), w1.canvasy(_event.y)
-        # pobranie pozycji kursora
-        rel = [x, y]
-        print ("Relased at", x, y)
-        # tworzenie zaznaczenia
-        rect = w1.create_rectangle(click[0], click[1], rel[0], rel[1], width=5)
-    else:
-        # wyswietlenie okna informacyjnego - error
-        tkMessageBox.showinfo("Blad zaznaczenia!", "Usun bierzace zaznaczenie [prawy przycisk myszy]",
-                              parent=child)
+    return
+
+    #
+    # global rel
+    # global rect
+    # global child
+    # # tworzenie zaznaczenia
+    # if rect == None:
+    #     # zmiana wspolrzednych okna na wspolrzedne Canvas
+    #     x, y = w1.canvasx(_event.x), w1.canvasy(_event.y)
+    #     # pobranie pozycji kursora
+    #     rel = [x, y]
+    #     print ("Relased at", x, y)
+    #     # tworzenie zaznaczenia
+    #     rect = w1.create_rectangle(click[0], click[1], rel[0], rel[1], width=5)
+    # else:
+    #     # wyswietlenie okna informacyjnego - error
+    #     tkMessageBox.showinfo("Blad zaznaczenia!", "Usun biezace zaznaczenie [prawy przycisk myszy]",
+    #                           parent=child)
+
 
 
 # usuwanie zaznaczenia
 def right_click(_event):
-    global rect
-    if rect != None:
-        w1.delete(rect)
-        rect = None
+    global click_list, w1
+    click_list = []
+    w1.delete("area_line")
 
 
 # wprowadzanie parametrow
@@ -350,6 +394,7 @@ par1 = 0.09
 par2 = 6
 size = np.zeros([2])
 click = np.zeros([2])
+click_list = []
 rel = np.zeros([2])
 coord = np.zeros([2])
 
