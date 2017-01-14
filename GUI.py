@@ -263,7 +263,7 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
 
         # uruchomienie algorytmu
 
-        license_plate, probable_characters, result_file = testAllContours2.plate_recog(
+        license_plate, probable_characters, result_file, threshholding_letters_file = testAllContours2.plate_recog(
             _path,
             _colorImage,
             _adaptive_thresholding_block_size,
@@ -280,6 +280,15 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
         # sprawdzenie czy algorytm zwrocil wyniki
         # jesli tak, wykonywany jest algorytm, jesli nie program jest przerywany - error
         if license_plate is not None:
+
+            # obraz tablicy po tresholdingu
+            thresholding_letters_path =\
+                os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + threshholding_letters_file
+            thresholding_letters_temp = Image.open(thresholding_letters_path)
+            thresholding_letters = ImageTk.PhotoImage(thresholding_letters_temp)
+            thresholding_label = Label(_w2, image=thresholding_letters, borderwidth=1)
+            thresholding_label.image = thresholding_letters
+            thresholding_label.pack()
 
             # sciezka do analizowanego przez algorytm fragmentu obrazu
             path2 = os.path.normpath(os.path.dirname(__file__)).replace('\\', '/') + "/" + result_file + ".jpg"

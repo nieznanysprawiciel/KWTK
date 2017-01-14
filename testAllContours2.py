@@ -77,7 +77,8 @@ def plate_recog(
 
     license_plate = None
     probable_characters = None
-    resultFile = None
+    result_file = None
+    thresholding_letters_file = None
 
     if os.path.isfile(filePath):
 
@@ -91,17 +92,20 @@ def plate_recog(
 
             pre, ext = os.path.splitext(image)
             image = pre + writeExtension
-            resultFile = newPlatesDir + image
+            result_file = newPlatesDir + image
 
-            cv2.imwrite(resultFile, processed_image)
-            print ("Segmented image result in: ") + resultFile
+            cv2.imwrite(result_file, processed_image)
+            print ("Segmented image result in: ") + result_file
 
             ### Letters segmentation
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
-            threshholding_letters = cv2.adaptiveThreshold(
+            thresholding_letters = cv2.adaptiveThreshold(
                 greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                 cv2.THRESH_BINARY, adaptive_thresholding_block_size, adaptive_thresholding_constant)
-            segments = hist.histogram_segmentation(threshholding_letters, segmentation_threshold, min_dist_between_segments)
+            thresholding_letters_file = newPlatesDir + pre + '_thresholding.jpg'
+            cv2.imwrite(thresholding_letters_file, thresholding_letters)
+
+            segments = hist.histogram_segmentation(thresholding_letters, segmentation_threshold, min_dist_between_segments)
 
             height = processed_image.shape[0]
 
@@ -156,8 +160,8 @@ def plate_recog(
             print("Possibilities:")
             print(probable_characters)
 
-            resultFile = newPlatesDir + pre + "_segmented"
-            cv2.imwrite(resultFile + writeExtension, processed_image)
+            result_file = newPlatesDir + pre + "_segmented"
+            cv2.imwrite(result_file + writeExtension, processed_image)
             # else:
             # raise Exception("No license plate found!")
             print('Segments')
@@ -167,4 +171,4 @@ def plate_recog(
         print ("Image doesn't exist: " + filePath)
 
     # zwrocenie wynikow
-    return license_plate, probable_characters, resultFile
+    return license_plate, probable_characters, result_file, thresholding_letters_file
