@@ -1,13 +1,18 @@
-from Tkinter import *
+import logging
+import os
 import tkFileDialog
+import tkMessageBox
+from Tkinter import *
+
+import cv2
 import numpy as np
 from PIL import ImageTk, Image
-import os
-import tkMessageBox
-import testAllContours2
-import traceback
-import cv2
 
+import testAllContours2
+
+logging.basicConfig(filename='kwtk.log', level=logging.DEBUG, format='%(asctime)s %(message)s')
+
+logger = logging.getLogger(__name__)
 
 # funkcja wywolywana po nacisnieciu przycisku Otworz...
 def openwindows():
@@ -25,9 +30,9 @@ def openwindows():
 
     try:
         pix_array = Image.open(path)
-    except:
+    except Exception as exc:
         # wyswietlenie okna informacyjnego - blad wyboru pliku
-        traceback.print_exc()
+        logger.exception(exc)
         tkMessageBox.showerror("Blad!", "Blad wyboru pliku!")
         return
 
@@ -326,7 +331,7 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
                                    "Zaznaczony obszar zawiera zbyt malo znakow. Prosze ponownie wczytac zdjecie i zaznaczyc obszar obejmujacy tablice rejestracyjna",
                                    parent=_child)
     except Exception as exc:
-        traceback.print_exc(exc)
+        logger.exception(exc)
         tkMessageBox.showerror("Blad programu!", "Analiza zakonczona bledem! Sprawdz logi programu.", parent=_child)
 
 
@@ -360,7 +365,7 @@ def clicked(_event):
     click_list.append((x, y))
     draw_click_list()
 
-    print("Clicked at", x, y)
+    logger.debug("Clicked at %d %d", x, y)
 
 
 # event - zwolnienie przycisku [tworzenie zaznaczenia]

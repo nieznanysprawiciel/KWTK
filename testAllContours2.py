@@ -1,4 +1,5 @@
 import cv2
+import logging
 import os
 import random
 import numpy as np
@@ -6,6 +7,9 @@ import processing
 import histogram as hist
 import matplotlib.pyplot as plt
 import characters_recognition
+
+
+logger = logging.getLogger(__name__)
 
 # print "working directory: "
 # print os.getcwd()
@@ -43,7 +47,7 @@ def plate_recog(
         segmentation_threshold,
         min_dist_between_segments,
         min_character_similarity):
-    print "Recognition started. Parameter values: " \
+    logger.info("Recognition started. Parameter values: " \
           "adaptive_thresholding_block_size = {}, adaptive_thresholding_constant = {}, " \
           "segmentation_threshold = {}, min_dist_between_segments = {}, " \
           "min_character_similarity = {}".format(
@@ -51,11 +55,11 @@ def plate_recog(
         adaptive_thresholding_constant,
         segmentation_threshold,
         min_dist_between_segments,
-        min_character_similarity)
+        min_character_similarity))
 
     if not os.path.exists(newPlatesDir):
         os.makedirs(newPlatesDir)
-        print ("Created directory: " + newPlatesDir)
+        logger.info("Created directory: " + newPlatesDir)
 
     # initialize of random numbers
     random.seed()
@@ -95,7 +99,7 @@ def plate_recog(
             result_file = newPlatesDir + image
 
             cv2.imwrite(result_file, processed_image)
-            print ("Segmented image result in: ") + result_file
+            logger.info("Segmented image result in: " + result_file)
 
             ### Letters segmentation
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
@@ -156,19 +160,18 @@ def plate_recog(
 
                 k += 1
 
-            print("Recognized " + license_plate)
-            print("Possibilities:")
-            print(probable_characters)
+            logger.info("Recognized " + license_plate)
+            logger.info("Possibilities:")
+            logger.info("Probable characters: " + str(probable_characters))
 
             result_file = newPlatesDir + pre + "_segmented"
             cv2.imwrite(result_file + writeExtension, processed_image)
             # else:
             # raise Exception("No license plate found!")
-            print('Segments')
-            print(segments)
+            logger.info("Segments: " + str(segments))
 
     else:
-        print ("Image doesn't exist: " + filePath)
+        logger.info("Image doesn't exist: " + filePath)
 
     # zwrocenie wynikow
     return license_plate, probable_characters, result_file, thresholding_letters_file

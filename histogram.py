@@ -1,11 +1,14 @@
+import logging
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
 
 
+logger = logging.getLogger(__name__)
+
 
 def histograms( image ):
-    print image.shape
+    logger.info("Image shape: " + str(image.shape))
     
     rows = image.shape[ 0 ]
     columns = image.shape[ 1 ]
@@ -33,7 +36,7 @@ def histogram_segmentation(image, threshold, min_segment_dist):
     columns = image.shape[ 1 ]
     
     search_threshold = rows * threshold
-    print "search_threshold " + str( search_threshold )
+    logger.info("search_threshold " + str( search_threshold ))
     
     horizontal, vertical = histograms( image )
     
@@ -68,7 +71,7 @@ def test():
     for segment in segments:
         cv2.rectangle(greyImage, (segment[ 0 ], 0), (segment[ 1 ], height), (0,255,0), 1)
 
-    print segments
+    logger.info("Segments: " + str(segments))
     cv2.imwrite( "purePlates/plate018.segments.jpg", greyImage )
     
 #test()

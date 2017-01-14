@@ -1,8 +1,12 @@
 import cv2
+import logging
 import random
 import numpy as np
 import filters
 import matplotlib.pyplot as plt
+
+
+logger = logging.getLogger(__name__)
 
 
 def top_left_compare ( point ):
@@ -85,7 +89,7 @@ def compute_contour_weight( index, hierarchy ):
     num_letters = 7
     
     num_sub_objects = filters.count_sub_object( index, hierarchy )
-    print num_sub_objects
+    logger.info("Number of subobjects: " + str(num_sub_objects))
     
     difference = float( num_sub_objects - num_letters )
     difference = min( abs( difference ), num_letters )
@@ -136,10 +140,10 @@ def process( colorImage ):
         best_idx = weights_sum.index( best )
 
         for weight in weights_sum:
-            print(weight)        
+            logger.info("Weight: " + str(weight))
         
         for contour in simplified_contours:
-            print(convex_area_diff(contour))
+            logger.info("Convex area diff: " + str(convex_area_diff(contour)))
 
         result = [ simplified_contours[ best_idx ] ]
         draw_contours( result, colorImage )
