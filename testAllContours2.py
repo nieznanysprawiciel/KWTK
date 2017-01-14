@@ -35,7 +35,9 @@ def convex_area_diff(contour):
 # delkaracja funkcji glownej (przekazanie sciezki do wybranego zdjecia,
 # macierzy pikseli wybranego zdjecia, parametru nr 1 oraz nr 2
 # jako argumentow funkcji)
-def plate_recog(_path, _colorImage, par1, par2):
+def plate_recog(_path, _colorImage, threshold, idx_threshold):
+    print "Recognition started, threshold = {}, idx_threshold = {}".format(threshold, idx_threshold)
+
     if not os.path.exists(newPlatesDir):
         os.makedirs(newPlatesDir)
         print ("Created directory: " + newPlatesDir)
@@ -78,7 +80,7 @@ def plate_recog(_path, _colorImage, par1, par2):
             greyImage = cv2.cvtColor(processed_image, cv2.COLOR_BGR2GRAY)
             threshholding_letters = cv2.adaptiveThreshold(greyImage, 255, cv2.ADAPTIVE_THRESH_GAUSSIAN_C,
                                                           cv2.THRESH_BINARY, 15, 5)
-            segments = hist.histogram_segmentation(threshholding_letters, par1, par2)
+            segments = hist.histogram_segmentation(threshholding_letters, threshold, idx_threshold)
 
             height = processed_image.shape[0]
 

@@ -11,7 +11,7 @@ import cv2
 
 # funkcja wywolywana po nacisnieciu przycisku Otworz...
 def openwindows():
-    global w1, img, size, t1, t2, child, bt2, bt1, click_list
+    global w1, img, size, t1, t2, child, bt2, click_list
 
     # deklaracja typu plikow do wyboru [JPG,PNG]
     myfiletypes = [('JPG/JPEG files', '*.jpg'), ('PNG files', '*.png'), ('All files', '*')]
@@ -134,15 +134,6 @@ def openwindows():
     # pozycjonowanie widgetow
     frame2.place(x=wd_frame + int(wd_vbar) * 2, y=0)
 
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    # Parametry
-    # parametry sa pobierane po nacisnieciu przycisku Wprowadz przez funkcje insert()
-    # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-    # deklaracja wartosci domyslnych parametrow
-    par1 = 0.09
-    par2 = 6
-
     # tworzenie ramki
     frame3 = Frame(child, width=child.winfo_screenwidth() / 2,
                    height=child.winfo_screenheight() / 2, borderwidth=4, relief=SUNKEN)
@@ -154,8 +145,8 @@ def openwindows():
     LF3.pack()
 
     # deklaracja wporwadzanych zmiennych
-    v1 = StringVar(child, value=par1)
-    v2 = StringVar(child, value=par2)
+    threshold_input = DoubleVar(master=child, value=0.09)
+    idx_threshold_input = IntVar(master=child, value=6)
 
     # tworzenie etykiety Parametr1
     sb1 = statusbar = Label(frame3, text="Parametr 1:", bd=1, relief=SUNKEN,
@@ -163,7 +154,7 @@ def openwindows():
     sb1.pack()
 
     # tworzenie pola wporwadzania Parametru1
-    t1 = Entry(frame3, textvariable=v1, font=("Helvetica", 10))
+    t1 = Entry(frame3, textvariable=threshold_input, font=("Helvetica", 10))
     t1.pack()
 
     # tworzenie etykiety Parametr2
@@ -172,7 +163,7 @@ def openwindows():
     sb2.pack()
 
     # tworzenie pola wporwadzania Parametru2
-    t2 = Entry(frame3, textvariable=v2, font=("Helvetica", 10))
+    t2 = Entry(frame3, textvariable=idx_threshold_input, font=("Helvetica", 10))
     t2.pack()
 
     # tworzenie przyciskow:
@@ -185,12 +176,11 @@ def openwindows():
     LF4 = LabelFrame(frame4, background='green')
     LF4.pack()
 
-    # Wprowadz - wprowadzenie nowych parametrow - uruchomienie funkcji insert()
-    bt1 = Button(LF4, text="Wprowadz \nnowe parametry", command=insert, font=("Helvetica", 10))
-    bt1.pack(side=LEFT)
-
     # Analiza - uruchiomienie algorytmu - wywolanie funckji analizuj()
-    bt2 = Button(LF4, text="Analiza", command=lambda: analizuj(pix_array, child, click, rel, statusbar, img, path, par1, par2, w2),
+    bt2 = Button(LF4, text="Analiza",
+                 command=lambda: analizuj(
+                     pix_array, child, click, rel, statusbar, img, path,
+                     threshold_input.get(), idx_threshold_input.get(), w2),
                  font=("Helvetica", 10))
     bt2.pack(side=LEFT)
 
@@ -201,7 +191,7 @@ def openwindows():
 
 # funckja wywolywana po nacisnieciu przycisku Analizuj
 # rozpoczyna dzialanie algorytmu
-def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, _par2, _w2):
+def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _threshold, _idx_threshold, _w2):
     global click_list
      #w1.delete(rect)
      #rect = None
@@ -243,7 +233,7 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, 
 
     # uruchomienie algorytmu
 
-    _results = testAllContours2.plate_recog(_path, _colorImage, _par1, _par2)
+    _results = testAllContours2.plate_recog(_path, _colorImage, _threshold, _idx_threshold)
 
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
     # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -284,11 +274,6 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path, _par1, 
                                font=("Helvetica", 12))
             _statusbar.pack(side=TOP, fill=X)
 
-
-
-        # blokowanie przyciskow
-        bt2.config(state=DISABLED)
-        bt1.config(state=DISABLED)
         tkMessageBox.showinfo("Zakonczono!", "Analiza zakonczona pomyslnie", parent=child)
     else:
         tkMessageBox.showerror("Niewlasciwy obszar!",
@@ -361,16 +346,6 @@ def right_click(_event):
     w1.delete("area_line")
 
 
-# wprowadzanie parametrow
-def insert():
-    global par1, par2
-    # pobieranie wartosci parametru z pola
-    par1 = float(t1.get())
-    par2 = float(t2.get())
-    # wyswieetlenie okna informacyjnego
-    tkMessageBox.showinfo("Wprowadzono nowe parametry", "Wprowadzonie zakonczone pomyslnie", parent=child)
-
-
 # zamykanie okna
 def delete(_child):
     global click
@@ -391,8 +366,8 @@ def fullscreen(_self):
 w = None
 rect = None
 child = None
-par1 = 0.09
-par2 = 6
+threshold = 0.09
+threshold_idx = 6
 size = np.zeros([2])
 click = np.zeros([2])
 click_list = []
