@@ -2,6 +2,7 @@ import logging
 import os
 import tkFileDialog
 import tkMessageBox
+import tkSimpleDialog
 from Tkinter import *
 
 import cv2
@@ -415,6 +416,37 @@ def fullscreen(_self):
     _self.geometry("%dx%d+0+0" % (w, h))
 
 
+class LogInDialog(tkSimpleDialog.Dialog):
+
+    def body(self, master):
+
+        Label(master, text="Login:").grid(row=0)
+        Label(master, text="Password:").grid(row=1)
+
+        self.e1 = Entry(master)
+        self.e2 = Entry(master, show='*')
+
+        self.e1.grid(row=0, column=1)
+        self.e2.grid(row=1, column=1)
+        return self.e1
+
+    def apply(self):
+        login = str(self.e1.get())
+        password = str(self.e2.get())
+        self.result = login, password
+
+
+def show_log_in_window():
+    log_in_dialog = LogInDialog(master)
+    login, password = log_in_dialog.result
+
+    if login == 'login' and password == 'password':
+        delete(log_in_button)
+        b1.config(state=ACTIVE)
+        b2.config(state=ACTIVE)
+    else:
+        tkMessageBox.showerror("Logowanie", "Podano bledny login i/lub haslo!", parent=master)
+
 # deklaracja zmiennych
 w = None
 rect = None
@@ -435,12 +467,15 @@ master.configure(background='#aaa9ff')
 # Otworz...
 # Wyjdz
 
-b1 = Button(master, text="Otworz...", width=60, height=5, command=openwindows, font=("Helvetica", 10))
-b2 = Button(master, text="Wyjdz", width=60, height=5, command=master.destroy, font=("Helvetica", 10))
+log_in_button = Button(master, text="Zaloguj sie", width=60, height=5, command=show_log_in_window, font=("Helvetica", 10))
+b1 = Button(master, text="Otworz...", width=60, height=5, command=openwindows, font=("Helvetica", 10), state=DISABLED)
+b2 = Button(master, text="Wyjdz", width=60, height=5, command=master.destroy, font=("Helvetica", 10), state=DISABLED)
 
+log_in_button.pack(side=LEFT)
 b1.pack(side=LEFT)
 b2.pack(side=RIGHT)
 
+log_in_button.place(x=master.winfo_screenwidth() / 2 - 240, y=master.winfo_screenheight() / 2 - 240)
 b1.place(x=master.winfo_screenwidth() / 2 - 240, y=master.winfo_screenheight() / 2 - 120)
 b2.place(x=master.winfo_screenwidth() / 2 - 240, y=master.winfo_screenheight() / 2)
 
