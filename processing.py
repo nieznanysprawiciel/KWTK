@@ -155,7 +155,7 @@ def process( colorImage ):
     else:
         return False
         
-		
+        
 def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_thresholding_constant):
 
     srcImage = cv2.cvtColor( colorImage, cv2.COLOR_BGR2GRAY )
@@ -177,10 +177,12 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
 
         corners = [find_corners(contour) for contour in selected_contours]
 
+        #print corners
         #draw_contours( selected_contours, colorImage )
         #draw_contours(corners, colorImage)
 
         rect = np.array([point[0] for point in corners[0]], dtype="float32")
+        print rect
         warped = perspective_warping(rect, colorImage)
 
         # sheared_plate = perspective_warping(corners, threshholding)
@@ -188,8 +190,17 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
 
         return warped
     else:
+        logger.info( "All contours filtered out" )
         return None
 
+        
+def process_chosen_contour(colorImage, corners, adaptive_thresholding_block_size, adaptive_thresholding_constant):
+              
+    rect = np.array([point[0] for point in corners[0]], dtype="float32")
+    print rect
+    warped = perspective_warping(rect, colorImage)
+
+    return warped
 
 
 def drawing_segments_histograms(horizontal_crop, vertical_crop, saveFileHorizontal, saveFileVertical):

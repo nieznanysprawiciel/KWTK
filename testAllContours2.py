@@ -46,7 +46,9 @@ def plate_recog(
         adaptive_thresholding_constant,
         segmentation_threshold,
         min_dist_between_segments,
-        min_character_similarity):
+        min_character_similarity,
+        corners ):
+        
     logger.info("Recognition started. Parameter values: " \
           "adaptive_thresholding_block_size = {}, adaptive_thresholding_constant = {}, " \
           "segmentation_threshold = {}, min_dist_between_segments = {}, " \
@@ -89,8 +91,13 @@ def plate_recog(
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # obraz jest wczytywany juz w GUI, tutaj przekazujemy jedynie macierz pikseli
 
-        processed_image = processing.process_area_only2(
-            _colorImage, adaptive_thresholding_block_size, adaptive_thresholding_constant)
+        processed_image = None
+        if corners is not None:
+            processed_image = processing.process_chosen_contour(
+                _colorImage, corners, adaptive_thresholding_block_size, adaptive_thresholding_constant)
+        else:
+            processed_image = processing.process_area_only2(
+                _colorImage, adaptive_thresholding_block_size, adaptive_thresholding_constant)
 
         if processed_image is not None:
 

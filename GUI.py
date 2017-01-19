@@ -247,10 +247,21 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
         only_x = [clk[0] for clk in click_list]
         only_y = [clk[1] for clk in click_list]
 
+        corners = None
+        
         if only_x and only_y:
             min_x, max_x = min(only_x), max(only_x)
             min_y, max_y = min(only_y), max(only_y)
+                       
+            point1 = [ click_list[0][0] - min_x, click_list[0][1] - min_y ]
+            point2 = [ click_list[1][0] - min_x, click_list[1][1] - min_y ]
+            point3 = [ click_list[2][0] - min_x, click_list[2][1] - min_y ]
+            point4 = [ click_list[3][0] - min_x, click_list[3][1] - min_y ]
+                       
             _colorImage = _colorImage[min_y:max_y, min_x:max_x, :]
+            corners = [np.array( [ [point1],[point2],[point3],[point4] ])]
+            
+            #print corners
 
         # if (_click[0] != 0) | (_rel[0] != 0):
         #     if (_click[1] != 0) | (_rel[1] != 0):
@@ -276,7 +287,8 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
             _adaptive_thresholding_constant,
             _segmentation_threshold,
             _min_dist_between_segments,
-            _min_character_similarity)
+            _min_character_similarity,
+            corners )
 
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
         # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -331,6 +343,7 @@ def analizuj(_colorImage, _child, _click, _rel, _statusbar, _img, _path,
             tkMessageBox.showerror("Niewlasciwy obszar!",
                                    "Zaznaczony obszar zawiera zbyt malo znakow. Prosze ponownie wczytac zdjecie i zaznaczyc obszar obejmujacy tablice rejestracyjna",
                                    parent=_child)
+                                   
     except Exception as exc:
         logger.exception(exc)
         tkMessageBox.showerror("Blad programu!", "Analiza zakonczona bledem! Sprawdz logi programu.", parent=_child)
