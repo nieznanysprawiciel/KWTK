@@ -182,7 +182,6 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
         #draw_contours(corners, colorImage)
 
         rect = np.array([point[0] for point in corners[0]], dtype="float32")
-        print rect
         warped = perspective_warping(rect, colorImage)
 
         # sheared_plate = perspective_warping(corners, threshholding)
@@ -197,7 +196,6 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
 def process_chosen_contour(colorImage, corners, adaptive_thresholding_block_size, adaptive_thresholding_constant):
               
     rect = np.array([point[0] for point in corners[0]], dtype="float32")
-    print rect
     warped = perspective_warping(rect, colorImage)
 
     return warped
