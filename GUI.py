@@ -444,8 +444,13 @@ def show_log_in_window():
         delete(log_in_button)
         b1.config(state=ACTIVE)
         b2.config(state=ACTIVE)
+        
+        logger.info( "Logged as: [" + login + "]" )
     else:
         tkMessageBox.showerror("Logowanie", "Podano bledny login i/lub haslo!", parent=master)
+        logger.info( "Login as: [" + login + "] failed" )
+        
+        b2.config(state=ACTIVE)
 
 # deklaracja zmiennych
 w = None
