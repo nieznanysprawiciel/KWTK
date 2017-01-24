@@ -117,6 +117,7 @@ def plate_recog(
             cv2.imwrite(thresholding_letters_file, thresholding_letters)
 
             segments = hist.histogram_segmentation(thresholding_letters, segmentation_threshold, min_dist_between_segments)
+            logger.info("Histograms computed. Segments extracted.")
 
             height = processed_image.shape[0]
 

@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 
 def histograms( image ):
-    logger.info("Image shape: " + str(image.shape))
+    #logger.info("Image shape: " + str(image.shape))
     
     rows = image.shape[ 0 ]
     columns = image.shape[ 1 ]
@@ -36,7 +36,7 @@ def histogram_segmentation(image, threshold, min_segment_dist):
     columns = image.shape[ 1 ]
     
     search_threshold = rows * threshold
-    logger.info("search_threshold " + str( search_threshold ))
+    #logger.info("search_threshold " + str( search_threshold ))
     
     horizontal, vertical = histograms( image )
     

@@ -174,11 +174,13 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
 
     # It's a good idea to simplify the contours to their convex hulls.
     simplified_contours = [cv2.convexHull(contour) for contour in filtered_contours]
+    logger.info("Convex hull computed")
 
     if not len( simplified_contours ) == 0:
         # For now, we select "the most rectangular" contour.
         # There should be a threshold to find more license plates.
         selected_contours = [sorted(simplified_contours, key=convex_area_diff)[0]]
+        logger.info("Best promising contour selected")
 
         corners = [find_corners(contour) for contour in selected_contours]
 
@@ -188,6 +190,7 @@ def process_area_only2(colorImage, adaptive_thresholding_block_size, adaptive_th
 
         rect = np.array([point[0] for point in corners[0]], dtype="float32")
         warped = perspective_warping(rect, colorImage)
+        logger.info("Perspective corrected")
 
         # sheared_plate = perspective_warping(corners, threshholding)
         # cv2.imshow(sheared_plate)
@@ -202,6 +205,7 @@ def process_chosen_contour(colorImage, corners, adaptive_thresholding_block_size
               
     rect = np.array([point[0] for point in corners[0]], dtype="float32")
     warped = perspective_warping(rect, colorImage)
+    logger.info("Perspective corrected")
 
     return warped
 

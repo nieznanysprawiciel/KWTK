@@ -27,10 +27,12 @@ def openwindows():
 
     # obsluga bledu - brak wyboru pliku lub niewlasciwy plik
     if not path:
+        logger.info("File: [" + path + "] is not valid")
         return
 
     try:
         pix_array = Image.open(path)
+        logger.info("Opened file: [" + path + "]")
     except Exception as exc:
         # wyswietlenie okna informacyjnego - blad wyboru pliku
         logger.exception(exc)
